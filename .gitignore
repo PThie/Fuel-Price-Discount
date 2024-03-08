@@ -1,0 +1,7 @@
+data
+output
+.Rprofile
+.Rhistory
+renv.lock
+renv/
+src/helpers/config.R
