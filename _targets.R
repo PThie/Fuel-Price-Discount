@@ -27,15 +27,28 @@ source(
 #----------------------------------------------
 # load R scripts
 
-lapply(
-    list.files(
-        config_paths()[["code_path"]],
-        pattern = "\\.R$",
-        full.names = TRUE,
-        ignore.case = TRUE
-    ),
-    source
+sub_directories <- list.dirs(
+    config_paths()[["src_path"]],
+    full.names = FALSE,
+    recursive = FALSE
 )
+
+for (sub_directory in sub_directories) {
+    if (sub_directory != "helpers") { 
+        lapply(
+            list.files(
+                file.path(
+                    config_paths()[["src_path"]],
+                    sub_directory
+                ),
+                pattern = "\\.R$",
+                full.names = TRUE,
+                ignore.case = TRUE
+            ),
+            source
+        )
+    }
+}
 
 #--------------------------------------------------
 # data preparation
@@ -44,7 +57,7 @@ targets_preparation <- rlang::list2(
     #--------------------------------------------------
     # read orginal fuel price data for Germany
     tar_file(
-        german_fuel_price_data,
+        german_fuel_price_file,
         file.path(
             config_paths()[["data_path"]],
             "german_fuel_data",
@@ -53,13 +66,13 @@ targets_preparation <- rlang::list2(
     ),
     tar_file_read(
         german_fuel_prices,
-        german_fuel_price_data,
+        german_fuel_price_file,
         read_german_fuel_prices(!!.x)
     ),
     #--------------------------------------------------
     # read original fuel price data for France
     tar_file(
-        french_fuel_price_data,
+        french_fuel_price_file,
         file.path(
             config_paths()[["data_path"]],
             "french_fuel_data",
@@ -68,10 +81,12 @@ targets_preparation <- rlang::list2(
     ),
     tar_file_read(
         french_fuel_prices,
-        french_fuel_price_data,
+        french_fuel_price_file,
         read_french_fuel_prices(!!.x)
     )
 )
+
+# TODO: Separate file loading, i.e. load data once as own target object (applies e.g. to microm data)
 
 #--------------------------------------------------
 # combine everything
