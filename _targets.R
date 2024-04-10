@@ -15,6 +15,8 @@ suppressWarnings(suppressPackageStartupMessages(
         library(tidyr)
         library(future)
         library(future.callr)
+        library(MetBrewer)
+        library(ggplot2)
     }
 ))
 
