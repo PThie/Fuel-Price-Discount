@@ -5,3 +5,5 @@ output
 renv.lock
 renv/
 src/helpers/config.R
+_targets/meta/meta
+_targets/
