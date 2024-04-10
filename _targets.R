@@ -17,6 +17,7 @@ suppressWarnings(suppressPackageStartupMessages(
         library(future.callr)
         library(MetBrewer)
         library(ggplot2)
+        library(openxlsx)
     }
 ))
 
@@ -116,6 +117,14 @@ targets_preparation <- rlang::list2(
         joining_germany_france(
             german_fuel_prices = german_fuel_prices,
             french_fuel_prices = french_fuel_prices
+        )
+    ),
+    #--------------------------------------------------
+    # Price trends
+    tar_target(
+        price_trends_plots,
+        plotting_price_trends(
+            fuel_prices = fuel_prices
         )
     )
 )
