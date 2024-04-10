@@ -1,3 +1,6 @@
+# TODO: once done zip the folder "transferred" in the original routine "gasprices"
+# and move to archive in this project (to preserve original coding)
+
 #----------------------------------------------
 # load libraries
 
@@ -9,8 +12,28 @@ suppressWarnings(suppressPackageStartupMessages(
         library(fst)
         library(arrow)
         library(dplyr)
+        library(tidyr)
+        library(future)
+        library(future.callr)
     }
 ))
+
+#--------------------------------------------------
+# Pipeline settings
+
+# target options
+tar_option_set(
+    resources = tar_resources(
+        fst = tar_resources_fst(compress = 50)
+    ),
+    seed = 1,
+    garbage_collection = TRUE,
+    storage = "worker",
+    retrieval = "worker"
+)
+
+# tar_make_future() configuration:
+plan(callr)
 
 #----------------------------------------------
 # load configurations
@@ -67,7 +90,7 @@ targets_preparation <- rlang::list2(
     tar_file_read(
         german_fuel_prices,
         german_fuel_price_file,
-        read_german_fuel_prices(!!.x)
+        reading_german_fuel_prices(!!.x)
     ),
     #--------------------------------------------------
     # read original fuel price data for France
@@ -82,7 +105,16 @@ targets_preparation <- rlang::list2(
     tar_file_read(
         french_fuel_prices,
         french_fuel_price_file,
-        read_french_fuel_prices(!!.x)
+        reading_french_fuel_prices(!!.x)
+    ),
+    #--------------------------------------------------
+    # combine German and French fuel price data
+    tar_fst(
+        fuel_prices,
+        joining_germany_france(
+            german_fuel_prices = german_fuel_prices,
+            french_fuel_prices = french_fuel_prices
+        )
     )
 )
 
