@@ -118,7 +118,13 @@ targets_preparation <- rlang::list2(
             german_fuel_prices = german_fuel_prices,
             french_fuel_prices = french_fuel_prices
         )
-    ),
+    )
+)
+
+#--------------------------------------------------
+# analysis
+
+targets_analysis <- rlang::list2(
     #--------------------------------------------------
     # Price trends
     tar_target(
@@ -135,5 +141,6 @@ targets_preparation <- rlang::list2(
 # combine everything
 
 rlang::list2(
-    targets_preparation
+    targets_preparation,
+    targets_analysis
 )
