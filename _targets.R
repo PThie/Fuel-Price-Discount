@@ -1,7 +1,7 @@
 #----------------------------------------------
 # load libraries
 
-suppressPackageStartupMessages(
+suppressWarnings(suppressPackageStartupMessages(
 	{
         library(targets)
         library(tarchetypes)
@@ -10,7 +10,7 @@ suppressPackageStartupMessages(
         library(arrow)
         library(dplyr)
     }
-)
+))
 
 #----------------------------------------------
 # load configurations
