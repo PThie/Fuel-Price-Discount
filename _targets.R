@@ -134,13 +134,34 @@ targets_preparation <- rlang::list2(
         )
     ),
     #--------------------------------------------------
-    # extract geo information of stations
+    # extract geo information of French stations
     tar_qs(
         french_stations,
         cleaning_french_stations(
             french_fuel_prices = french_fuel_prices
         )
     ),
+    #--------------------------------------------------
+    # reading and cleaning German stations
+    tar_file(
+        german_station_file,
+        file.path(
+            config_paths()[["data_path"]],
+            "german_stations",
+            "german_stations.fst"
+        )
+    ),
+    tar_file_read(
+        german_stations_raw,
+        german_station_file,
+        reading_german_stations(!!.x)
+    ),
+    # tar_qs(
+    #     german_stations,
+    #     cleaning_german_stations(
+    #         german_stations_raw = german_stations_raw
+    #     )
+    # ),
     #--------------------------------------------------
     # read European fuel price data
     tar_file(
@@ -188,24 +209,23 @@ targets_analysis <- rlang::list2(
     ),
     #--------------------------------------------------
     # Testing for spillovers at the French border
-    # CONTINUE
-    # tar_target(
-    #     french_reaction_spillovers,
-    #     testing_french_reaction(
-    #         fuel_prices_april_august = fuel_prices_april_august,
-    #         french_stations = french_stations
-    #     )
-    # )
+    tar_target(
+        french_reaction_spillovers,
+        testing_french_reaction(
+            fuel_prices_april_august = fuel_prices_april_august,
+            french_stations = french_stations
+        )
+    ),
     #--------------------------------------------------
     # Plotting European gas prices
     # Tests whether France is different in their price development compared
     # to other European countries
-    # tar_target(
-    #     european_prices_plots,
-    #     plotting_european_prices(
-    #         european_fuel_prices = NA
-    #     )
-    # )
+    tar_target(
+        european_prices_plots,
+        plotting_european_prices(
+            european_fuel_prices = european_fuel_prices
+        )
+    )
 )
 
 # TODO: Separate file loading, i.e. load data once as own target object (applies e.g. to microm data)
