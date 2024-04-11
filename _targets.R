@@ -23,6 +23,7 @@ suppressWarnings(suppressPackageStartupMessages(
         library(rlang)
         library(sf)
         library(qs)
+        library(haven)
     }
 ))
 
@@ -143,7 +144,7 @@ targets_preparation <- rlang::list2(
     #--------------------------------------------------
     # read European fuel price data
     tar_file(
-        european_fuel_prices_file,
+        european_fuel_price_file,
         file.path(
             config_paths()[["data_path"]],
             "country_prices",
@@ -152,7 +153,7 @@ targets_preparation <- rlang::list2(
     ),
     tar_file_read(
         european_fuel_prices,
-        european_fuel_prices_file,
+        european_fuel_price_file,
         reading_european_fuel_prices(!!.x)
     )
 )
@@ -193,6 +194,16 @@ targets_analysis <- rlang::list2(
     #     testing_french_reaction(
     #         fuel_prices_april_august = fuel_prices_april_august,
     #         french_stations = french_stations
+    #     )
+    # )
+    #--------------------------------------------------
+    # Plotting European gas prices
+    # Tests whether France is different in their price development compared
+    # to other European countries
+    # tar_target(
+    #     european_prices_plots,
+    #     plotting_european_prices(
+    #         european_fuel_prices = NA
     #     )
     # )
 )
