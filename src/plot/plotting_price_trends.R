@@ -17,9 +17,6 @@ plotting_price_trends <- function(fuel_prices = NA) {
     end_october_2022 <- as.Date("2022-10-31", format = "%Y-%m-%d")
     start_war <- as.Date("2022-02-24", "%Y-%m-%d")
 
-    # define colors
-    pal <- MetBrewer::met.brewer(name = "Java", n = 5)
-
     #----------------------------------------------
     # setting plotting language to English
 
@@ -87,8 +84,8 @@ plotting_price_trends <- function(fuel_prices = NA) {
         )+
         scale_color_manual(
             values = c(
-                "diesel" = pal[1],
-                "e10" = pal[3]
+                "diesel" = config_globals()[["java_five_colors"]][1],
+                "e10" = config_globals()[["java_five_colors"]][3]
             ),
             labels = c(
                 "diesel" = "Diesel",
@@ -213,8 +210,8 @@ plotting_price_trends <- function(fuel_prices = NA) {
         )+
         scale_color_manual(
             values = c(
-                "diesel" = pal[1],
-                "e10" = pal[3]
+                "diesel" = config_globals()[["java_five_colors"]][1],
+                "e10" = config_globals()[["java_five_colors"]][3]
             ),
             labels = c(
                 "diesel" = "Diesel",
@@ -282,8 +279,14 @@ plotting_price_trends <- function(fuel_prices = NA) {
             )+
             scale_color_manual(
                 name = "",
-                values = c("DE" = pal[3], "FR" = pal[1]),
-                labels = c("DE" = "Germany", "FR" = "France")
+                values = c(
+                    "DE" = config_globals()[["java_five_colors"]][3],
+                    "FR" = config_globals()[["java_five_colors"]][1]
+                ),
+                labels = c(
+                    "DE" = "Germany",
+                    "FR" = "France"
+                )
             )+
             scale_x_date(
                 date_breaks = "1 month",
@@ -419,7 +422,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
                         xend = as.Date("2022-05-31", format = "%Y-%m-%d"),
                         linewidth = 0.8,
                         linetype = "dashed",
-                        col = pal[3]
+                        col = config_globals()[["java_five_colors"]][3]
                     )+
                     # Germany treatment period
                     geom_segment(
@@ -430,7 +433,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
                         xend = config_globals()[["end_tr_de"]],
                         linewidth = 0.8,
                         linetype = "dashed",
-                        col = pal[3]
+                        col = config_globals()[["java_five_colors"]][3]
                     )+
                     # France control period
                     geom_segment(
@@ -441,7 +444,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
                         xend = as.Date("2022-05-31", format = "%Y-%m-%d"),
                         linewidth = 0.8,
                         linetype = "dashed",
-                        col = pal[1]
+                        col = config_globals()[["java_five_colors"]][1]
                     )+
                     # France treatement period
                     geom_segment(
@@ -452,7 +455,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
                         xend = config_globals()[["end_tr_de"]],
                         linewidth = 0.8,
                         linetype = "dashed",
-                        col = pal[1]
+                        col = config_globals()[["java_five_colors"]][1]
                     )
             }
 
