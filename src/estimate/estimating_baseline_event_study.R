@@ -34,7 +34,7 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
     dep_cases <- c("diesel", "e10")
 
     # loop through gasoline types
-    for(dep_case in dep_cases){
+    suppressMessages(for(dep_case in dep_cases){
         mod <- est_fun(
             moddata = avg_prices_event,
             depvar = dep_case,
@@ -42,7 +42,7 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
             event = TRUE
         )
         mod_list_event[[dep_case]] <- mod
-    }
+    })
 
     # loop through estimation results and generate plot
     for (result in names(mod_list_event)) {
