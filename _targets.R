@@ -139,6 +139,21 @@ targets_preparation <- rlang::list2(
         cleaning_french_stations(
             french_fuel_prices = french_fuel_prices
         )
+    ),
+    #--------------------------------------------------
+    # read European fuel price data
+    tar_file(
+        european_fuel_prices_file,
+        file.path(
+            config_paths()[["data_path"]],
+            "country_prices",
+            "country_prices.dta"
+        )
+    ),
+    tar_file_read(
+        european_fuel_prices,
+        european_fuel_prices_file,
+        reading_european_fuel_prices(!!.x)
     )
 )
 
@@ -159,6 +174,14 @@ targets_analysis <- rlang::list2(
     tar_target(
         baseline_effects,
         estimating_baseline_effects(
+            fuel_prices_april_august = fuel_prices_april_august
+        )
+    ),
+    #--------------------------------------------------
+    # Event study approach
+    tar_target(
+        baseline_event_study,
+        estimating_baseline_event_study(
             fuel_prices_april_august = fuel_prices_april_august
         )
     ),
