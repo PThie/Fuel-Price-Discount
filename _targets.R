@@ -18,6 +18,11 @@ suppressWarnings(suppressPackageStartupMessages(
         library(MetBrewer)
         library(ggplot2)
         library(openxlsx)
+        library(fixest)
+        library(stringr)
+        library(rlang)
+        library(sf)
+        library(qs)
     }
 ))
 
@@ -118,6 +123,22 @@ targets_preparation <- rlang::list2(
             german_fuel_prices = german_fuel_prices,
             french_fuel_prices = french_fuel_prices
         )
+    ),
+    # Subsetting the fuel price data to the analysis time period
+    # April to August 2022
+    tar_fst(
+        fuel_prices_april_august,
+        subsetting_fuel_prices(
+            fuel_prices = fuel_prices
+        )
+    ),
+    #--------------------------------------------------
+    # extract geo information of stations
+    tar_qs(
+        french_stations,
+        cleaning_french_stations(
+            french_fuel_prices = french_fuel_prices
+        )
     )
 )
 
@@ -132,7 +153,25 @@ targets_analysis <- rlang::list2(
         plotting_price_trends(
             fuel_prices = fuel_prices
         )
-    )
+    ),
+    #--------------------------------------------------
+    # Estimating baseline effects
+    tar_target(
+        baseline_effects,
+        estimating_baseline_effects(
+            fuel_prices_april_august = fuel_prices_april_august
+        )
+    ),
+    #--------------------------------------------------
+    # Testing for spillovers at the French border
+    # CONTINUE
+    # tar_target(
+    #     french_reaction_spillovers,
+    #     testing_french_reaction(
+    #         fuel_prices_april_august = fuel_prices_april_august,
+    #         french_stations = french_stations
+    #     )
+    # )
 )
 
 # TODO: Separate file loading, i.e. load data once as own target object (applies e.g. to microm data)
