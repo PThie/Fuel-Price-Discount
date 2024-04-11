@@ -42,7 +42,7 @@ est_fun <- function(
     if(event == TRUE) {
         fm <- formula(
             paste(
-                depvara, "~",
+                depvar, "~",
                 paste("relevel(as.factor(time_to_treatment), \"-1\") * relevel(as.factor(treat_region_de), \"control\")"),
                 paste("| as.factor(date) + station_id")
             )
