@@ -31,15 +31,6 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     )    
 
     #----------------------------------------------
-    # define coefficient labels
-
-    coefnames <- c(
-        "relevel(as.factor(treat_tankrabatt_de),\"control\")treated" = "FTD",
-        "relevel(as.factor(treat_region_de),\"control\")treated" = "GER",
-        "relevel(as.factor(treat_tankrabatt_de),\"control\")treated $\times$ relevel(as.factor(treat_region_de),\"control\")treated" = "FTD x GER"
-    )
-
-    #----------------------------------------------
     # estimation with FE
 
     # define choices for FE and different gasoline types
@@ -174,7 +165,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             file = file.path(config_paths()[["output_path"]], "estimation", filename),
             digits = "r3",
             cluster = "station_id",
-            dict = coefnames,
+            dict = config_globals()[["coefnames"]],
             replace = TRUE,
             signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
         )
@@ -220,7 +211,8 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             headers = c("OLS", "regionFE", "timeFE", "bothFE"),
             title = paste("Restricted to", min_date, "to", max_date),
             file = file.path(config_paths()[["output_path"]], "estimation", filename),
-            digits = "r3", cluster = "station_id", dict = coefnames,
+            digits = "r3", cluster = "station_id",
+            dict = config_globals()[["coefnames"]],
             replace = TRUE,
             signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
         )
