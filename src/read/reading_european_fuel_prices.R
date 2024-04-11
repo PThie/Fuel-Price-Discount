@@ -35,5 +35,5 @@ reading_european_fuel_prices <- function(data_file_path = NA) {
     #--------------------------------------------------
     # return
 
-    return(european_prices)
+    return(european_prices_prep)
 }
