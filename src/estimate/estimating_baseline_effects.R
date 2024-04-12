@@ -42,7 +42,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     mod_list_complete <- list()
 
     # loop through FE definitons and gasoline types
-    for(dep_case in dep_cases){
+    suppressMessages(for(dep_case in dep_cases) {
         for(fe_case in fe_cases){
             mod <- est_fun(
                 moddata = fuel_prices_april_august,
@@ -53,7 +53,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             mod_list_gastype[[fe_case]] <- mod
         }
         mod_list_complete[[dep_case]] <- mod_list_gastype
-    }
+    })
 
     #----------------------------------------------
     # calculate the average prices in the FTD period
@@ -183,8 +183,8 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     mod_list_complete_restricted <- list()
 
     # loop through FE definitons and gasoline types
-    for(dep_case in dep_cases){
-        for(fe_case in fe_cases){
+    suppressMessages(for(dep_case in dep_cases) {
+        for(fe_case in fe_cases) {
             mod <- est_fun(
                 moddata = restricted_sample,
                 depvar = dep_case,
@@ -194,7 +194,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             mod_list_gastype_restricted[[fe_case]] <- mod
         }
         mod_list_complete_restricted[[dep_case]] <- mod_list_gastype_restricted
-    }
+    })
 
     # export
     min_date <- min(restricted_sample$date)
