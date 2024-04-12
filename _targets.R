@@ -83,6 +83,28 @@ for (sub_directory in sub_directories) {
 }
 
 #--------------------------------------------------
+# geo data
+
+targets_geo <- rlang::list2(
+    #--------------------------------------------------
+    # connections between grids and municipalities
+    tar_file(
+        grid_municipality_file,
+        file.path(
+            config_paths()[["gebiete_path"]],
+            "Zuordnung",
+            "_Gemeinde",
+            "2020_Grids_Municipality_Exact_unambiguous.csv"
+        )
+    ),
+    tar_file_read(
+        grid_municipalities,
+        grid_municipality_file,
+        data.table::fread(!!.x)
+    )
+)
+
+#--------------------------------------------------
 # data preparation
 
 targets_preparation <- rlang::list2(
@@ -156,12 +178,12 @@ targets_preparation <- rlang::list2(
         german_station_file,
         reading_german_stations(!!.x)
     ),
-    # tar_qs(
-    #     german_stations,
-    #     cleaning_german_stations(
-    #         german_stations_raw = german_stations_raw
-    #     )
-    # ),
+    tar_qs(
+        german_stations,
+        cleaning_german_stations(
+            german_stations_raw = german_stations_raw
+        )
+    ),
     #--------------------------------------------------
     # read European fuel price data
     tar_file(
@@ -176,6 +198,21 @@ targets_preparation <- rlang::list2(
         european_fuel_prices,
         european_fuel_price_file,
         reading_european_fuel_prices(!!.x)
+    ),
+    #--------------------------------------------------
+    # read RWI-GEO-GRID data
+    tar_file(
+        microm_data_file,
+        file.path(
+            config_paths()[["microm_path"]],
+            "V12",
+            "microm_panel_05-20.dta"
+        )
+    ),
+    tar_file_read(
+        microm_data_clean,
+        microm_data_file,
+        reading_microm_data(!!.x)
     )
 )
 
@@ -234,6 +271,7 @@ targets_analysis <- rlang::list2(
 # combine everything
 
 rlang::list2(
+    targets_geo,
     targets_preparation,
     targets_analysis
 )
