@@ -131,7 +131,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
             legend.key.size = unit(0.75, "cm")
         )
 
-    ggsave(
+    suppressMessages(ggsave(
         plot = diff_plot,
         file.path(
             config_paths()[["output_path"]],
@@ -139,7 +139,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
             "difference_in_prices.png"
         ),
         dpi = config_globals()[["owndpi"]]
-    )
+    ))
 
     #--------------------------------------------------
     # plot the entire time frame since 2021
@@ -237,7 +237,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
             legend.text = element_text(size = 12),
         )
 
-    ggsave(
+    suppressMessages(ggsave(
         plot = overall_plot,
         file.path(
             config_paths()[["output_path"]],
@@ -245,7 +245,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
             "overall_trends.png"
         ),
         dpi = config_globals()[["owndpi"]]
-    )
+    ))
 
     #----------------------------------------------
     # plot the trend for different periods
@@ -461,7 +461,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
 
             # export graph
             filename <- paste0(fln, ".png")
-            ggsave(
+            suppressMessages(ggsave(
                 plot = price_plot,
                 file.path(
                     config_paths()[["output_path"]],
@@ -469,7 +469,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
                     filename
                 ),
                 dpi = config_globals()[["owndpi"]]
-            )
+            ))
         }
     }
 

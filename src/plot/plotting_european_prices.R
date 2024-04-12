@@ -137,7 +137,7 @@ plotting_european_prices <- function(european_fuel_prices = NA) {
         }
 
         # export
-        ggsave(
+        suppressMessages(ggsave(
             plot = country_plot,
             file.path(
                 config_paths()[["output_path"]],
@@ -145,6 +145,6 @@ plotting_european_prices <- function(european_fuel_prices = NA) {
                 filename
             ),
             dpi = config_globals()[["owndpi"]]
-        )
+        ))
     }
 }
