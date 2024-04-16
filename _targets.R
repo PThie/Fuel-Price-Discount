@@ -118,7 +118,7 @@ targets_geo <- rlang::list2(
     tar_file_read(
         german_municipalities,
         german_municipality_file,
-        sf::st_read(!!.x) |>
+        sf::st_read(!!.x, quiet = TRUE) |>
             dplyr::select(AGS = AGS_0, geometry) |>
             dplyr::mutate(
                 AGS = as.numeric(AGS)
@@ -139,7 +139,7 @@ targets_geo <- rlang::list2(
     tar_file_read(
         german_districts,
         german_district_file,
-        sf::st_read(!!.x) |>
+        sf::st_read(!!.x, quiet = TRUE) |>
             dplyr::select(AGS, geometry) |>
             dplyr::mutate(
                 AGS = as.numeric(AGS)
