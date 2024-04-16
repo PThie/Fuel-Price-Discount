@@ -1,6 +1,11 @@
 # TODO: once done zip the folder "transferred" in the original routine "gasprices"
 # and move to archive in this project (to preserve original coding)
 
+# NOTE: In case the error shows up:
+# Error: OGRCreateCoordinateTransformation(): transformation not available
+# Run before loading the packages
+    # Sys.setenv("PROJ_NETWORK"="ON")
+
 #----------------------------------------------
 # load libraries
 
@@ -24,6 +29,7 @@ suppressWarnings(suppressPackageStartupMessages(
         library(sf)
         library(qs)
         library(haven)
+        library(data.table)
     }
 ))
 
@@ -312,6 +318,18 @@ targets_analysis <- rlang::list2(
         european_prices_plots,
         plotting_european_prices(
             european_fuel_prices = european_fuel_prices
+        )
+    ),
+    #--------------------------------------------------
+    # Testing the role of purchasing power
+    # As proxy for demand elasticity
+    tar_target(
+        purchasing_power_effects,
+        making_purch_power(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            german_municipalities = german_municipalities
         )
     )
 )
