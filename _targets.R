@@ -98,9 +98,53 @@ targets_geo <- rlang::list2(
         )
     ),
     tar_file_read(
+        # NOTE: Read data directly since it does not requiere a function
         grid_municipalities,
         grid_municipality_file,
-        data.table::fread(!!.x)
+        data.table::fread(!!.x) |>
+            dplyr::select(-share)
+    ),
+    #--------------------------------------------------
+    # geographical information for German municipalities
+    tar_file(
+        german_municipality_file,
+        file.path(
+            config_paths()[["gebiete_path"]],
+            "Gemeinde",
+            "2020",
+            "VG250_GEM.shp"
+        )
+    ),
+    tar_file_read(
+        german_municipalities,
+        german_municipality_file,
+        sf::st_read(!!.x) |>
+            dplyr::select(AGS = AGS_0, geometry) |>
+            dplyr::mutate(
+                AGS = as.numeric(AGS)
+            ) |>
+            sf::st_transform(config_globals()[["utmcrs"]])
+    ),
+    #--------------------------------------------------
+    # geographical information for German districts
+    tar_file(
+        german_district_file,
+        file.path(
+            config_paths()[["gebiete_path"]],
+            "Kreis",
+            "2020",
+            "VG250_KRS.shp"
+        )
+    ),
+    tar_file_read(
+        german_districts,
+        german_district_file,
+        sf::st_read(!!.x) |>
+            dplyr::select(AGS, geometry) |>
+            dplyr::mutate(
+                AGS = as.numeric(AGS)
+            ) |>
+            sf::st_transform(config_globals()[["utmcrs"]])
     )
 )
 
@@ -210,9 +254,16 @@ targets_preparation <- rlang::list2(
         )
     ),
     tar_file_read(
-        microm_data_clean,
+        microm_data_raw,
         microm_data_file,
         reading_microm_data(!!.x)
+    ),
+    tar_fst(
+        microm_data_cleaned,
+        cleaning_microm_data(
+            microm_data_raw = microm_data_raw,
+            grid_municipalities = grid_municipalities
+        )
     )
 )
 
