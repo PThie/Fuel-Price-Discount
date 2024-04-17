@@ -1,9 +1,14 @@
-cleaning_german_stations <- function(german_stations_raw = NA) {
+cleaning_german_stations <- function(
+    german_stations_raw = NA,
+    german_municipalities = NA
+) {
     #' @title Cleaning German stations
     #' 
     #' @description This function cleans the German station data.
     #' 
     #' @param german_stations_raw Dataframe containing the raw German station data.
+    #' @param german_municipalities Geographical information of German
+    #' municipalities.
     #' 
     #' @return Cleaned German station data.
     #' @author Patrick Thiel
@@ -21,6 +26,14 @@ cleaning_german_stations <- function(german_stations_raw = NA) {
             crs = config_globals()[["gpscrs"]]
         ) |>
         sf::st_transform(config_globals()[["utmcrs"]])
+    
+    # add municipality information
+    german_stations_geo <- sf::st_join(
+        german_stations,
+        german_municipalities,
+        left = TRUE,
+        largest = TRUE
+    )
     
     #--------------------------------------------------
     # return
