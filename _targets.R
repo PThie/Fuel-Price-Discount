@@ -229,7 +229,8 @@ targets_preparation <- rlang::list2(
     tar_qs(
         german_stations,
         cleaning_german_stations(
-            german_stations_raw = german_stations_raw
+            german_stations_raw = german_stations_raw,
+            german_municipalities = german_municipalities
         )
     ),
     #--------------------------------------------------
