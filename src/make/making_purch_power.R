@@ -216,22 +216,11 @@ making_purch_power <- function(
             "station_id", "AGS", "total_purch_power_munic",
             "total_people_munic", "purch_power_pp_munic",
             "purch_power_pp_cat_munic"
-        )
-
-        # merge stations and geo data
-        german_stations_geo <- sf::st_join(
-            german_stations,
-            german_municipalities,
-            left = TRUE,
-            largest = TRUE
-        )
-    
-        # merge purchasing power
-        german_stations_pp <- german_stations_geo |>
-            sf::st_drop_geometry()
+        )    
         
         german_stations_pp <- merge(
-            german_stations_pp,
+            german_stations |>
+                sf::st_drop_geometry(),
             purchpower_municipality,
             by = "AGS",
             all.x = TRUE
