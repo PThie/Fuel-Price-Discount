@@ -108,7 +108,11 @@ targets_geo <- rlang::list2(
         grid_municipalities,
         grid_municipality_file,
         data.table::fread(!!.x) |>
-            dplyr::select(-share)
+            dplyr::select(-share) |>
+            dplyr::mutate(
+                # add leading zeros to AGS
+                AGS = stringr::str_pad(AGS, 8, pad = "0")
+            )
     ),
     #--------------------------------------------------
     # geographical information for German municipalities
@@ -126,9 +130,6 @@ targets_geo <- rlang::list2(
         german_municipality_file,
         sf::st_read(!!.x, quiet = TRUE) |>
             dplyr::select(AGS = AGS_0, geometry) |>
-            dplyr::mutate(
-                AGS = as.numeric(AGS)
-            ) |>
             sf::st_transform(config_globals()[["utmcrs"]])
     ),
     #--------------------------------------------------
@@ -147,9 +148,6 @@ targets_geo <- rlang::list2(
         german_district_file,
         sf::st_read(!!.x, quiet = TRUE) |>
             dplyr::select(AGS, geometry) |>
-            dplyr::mutate(
-                AGS = as.numeric(AGS)
-            ) |>
             sf::st_transform(config_globals()[["utmcrs"]])
     )
 )
