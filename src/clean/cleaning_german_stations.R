@@ -34,9 +34,15 @@ cleaning_german_stations <- function(
         left = TRUE,
         largest = TRUE
     )
-    
+
+    # add district information
+    german_stations_geo <- german_stations_geo |>
+        dplyr::mutate(
+            AGS_district = substring(AGS, 1, 5)
+        )
+
     #--------------------------------------------------
     # return
     
-    return(german_stations)
+    return(german_stations_geo)
 }
