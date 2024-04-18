@@ -330,6 +330,18 @@ targets_analysis <- rlang::list2(
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities
         )
+    ),
+    #--------------------------------------------------
+    # Testing the role of competition
+    # Proxied through the station density per car
+    tar_target(
+        station_density_effects,
+        making_station_density(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            german_districts = german_districts
+        )
     )
 )
 
