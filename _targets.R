@@ -340,6 +340,7 @@ targets_analysis <- rlang::list2(
             fuel_prices_april_august = fuel_prices_april_august,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
+            german_municipalities = german_municipalities,
             german_districts = german_districts
         )
     )

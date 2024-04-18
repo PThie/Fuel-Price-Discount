@@ -2,6 +2,7 @@ making_station_density <- function(
     fuel_prices_april_august = NA,
     german_stations = NA,
     microm_data_cleaned = NA,
+    german_municipalities = NA,
     german_districts = NA
 ) {
     #' @title Heterogeneity based on car density
@@ -11,8 +12,9 @@ making_station_density <- function(
     #' 
     #' @param fuel_prices_april_august Fuel prices from April to August 2022
     #' @param german_stations German stations
-    #' @param german_districts German districts
     #' @param microm_data_cleaned Cleaned microm data (RWI-GEO-GRID data)
+    #' @param german_municipalities German municipalities
+    #' @param german_districts German districts
     #' 
     #' @return NULL, estimation outputs
     #' @author Patrick Thiel
