@@ -257,7 +257,7 @@ making_station_density <- function(
             list_name <- paste(var, "cd_cat", cat, sep = "_")
             # loop through options and store output
             est_results_munic[[list_name]] <- est_fun(
-                moddata = avg_prices_cd_sep,
+                moddata = avg_prices_cd,
                 depvar = var,
                 pp_cat = cat
             )
@@ -377,7 +377,7 @@ making_station_density <- function(
     # event study analysis
 
     # add time to treatment in days
-    avg_prices_event <- avg_prices_cd_sep |>
+    avg_prices_event <- avg_prices_cd |>
         dplyr::mutate(
             time_to_treatment = as.numeric(difftime(
                 as.Date(date, "%Y-%m-%d"),
