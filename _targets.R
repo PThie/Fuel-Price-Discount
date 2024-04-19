@@ -343,6 +343,16 @@ targets_analysis <- rlang::list2(
             german_municipalities = german_municipalities,
             german_districts = german_districts
         )
+    ),
+    #--------------------------------------------------
+    # Estimating the regional effect at district level
+    tar_target(
+        regional_effect_district,
+        estimating_regional_effect(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations,
+            german_districts = german_districts
+        )
     )
 )
 
