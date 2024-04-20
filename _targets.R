@@ -30,6 +30,7 @@ suppressWarnings(suppressPackageStartupMessages(
         library(qs)
         library(haven)
         library(data.table)
+        library(stats)
     }
 ))
 
@@ -352,6 +353,16 @@ targets_analysis <- rlang::list2(
             fuel_prices_april_august = fuel_prices_april_august,
             german_stations = german_stations,
             german_districts = german_districts
+        )
+    ),
+    #--------------------------------------------------
+    # Affected population, i.e. population shares receiving different
+    # pass-through rates
+    tar_target(
+        affected_population,
+        calculating_affected_population(
+            regional_effect_district = regional_effect_district,
+            microm_data_cleaned = microm_data_cleaned
         )
     )
 )
