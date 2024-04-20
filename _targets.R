@@ -378,6 +378,16 @@ targets_analysis <- rlang::list2(
     tar_target(
         fuel_consumption_plots,
         plotting_fuel_consumption()
+    ),
+    #--------------------------------------------------
+    # Determining station density in relation to the national level
+    # Relate it also to the pass-through rates
+    tar_target(
+        station_density_inequality,
+        calculating_inequality_station_density(
+            regional_effect_district = regional_effect_district,
+            microm_data_cleaned = microm_data_cleaned
+        )
     )
 )
 
