@@ -316,7 +316,7 @@ plotting_fuel_consumption <- function() {
             "graphs",
             "fuel_consumption_levels.png"
         ),
-        dpi = config_globals()[["dpi"]]
+        dpi = config_globals()[["owndpi"]]
     ))
 
     #--------------------------------------------------
