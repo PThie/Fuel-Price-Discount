@@ -27,7 +27,7 @@ making_station_density <- function(
     cardensity_municipality <- microm_data_cleaned |>
         dplyr::group_by(AGS) |>
         dplyr::summarise(
-            median_car_density = median(car_density, na.rm = TRUE)
+            median_station_density = median(station_density, na.rm = TRUE)
         ) |>
         # add district AGS
         dplyr::mutate(
@@ -57,13 +57,13 @@ making_station_density <- function(
     cardensity_stations_clean <- cardensity_stations |>
         dplyr::select(-AGS_district) |>
         dplyr::mutate(
-            car_density_adj = count_stations / median_car_density 
+            station_density_adj = count_stations / median_station_density 
         )
 
     # get quantiles
     quant_cd <- as.numeric(
         quantile(
-            cardensity_stations_clean$car_density_adj,
+            cardensity_stations_clean$station_density_adj,
             prob = seq(0, 1, 0.1),
             na.rm = TRUE
         )
@@ -75,27 +75,27 @@ making_station_density <- function(
         file.path(
             config_paths()[["output_path"]],
             "descriptives",
-            "deciles_car_density.txt"
+            "deciles_station_density.txt"
         )
     )
 
     # add categories
     cardensity_stations_clean <- cardensity_stations_clean |>
         dplyr::mutate(
-            car_density_cat = dplyr::case_when(
-                car_density_adj >= 0 & car_density_adj < quant_cd[2] ~ "1",
-                car_density_adj >= quant_cd[2] & car_density_adj < quant_cd[3] ~ "2",
-                car_density_adj >= quant_cd[3] & car_density_adj < quant_cd[4] ~ "3",
-                car_density_adj >= quant_cd[4] & car_density_adj < quant_cd[5] ~ "4",
-                car_density_adj >= quant_cd[5] & car_density_adj < quant_cd[6] ~ "5",
-                car_density_adj >= quant_cd[6] & car_density_adj < quant_cd[7] ~ "6",
-                car_density_adj >= quant_cd[7] & car_density_adj < quant_cd[8] ~ "7",
-                car_density_adj >= quant_cd[8] & car_density_adj < quant_cd[9] ~ "8",
-                car_density_adj >= quant_cd[9] & car_density_adj < quant_cd[10] ~ "9",
-                car_density_adj >= quant_cd[10] & car_density_adj <= quant_cd[11] ~ "10"
+            station_density_cat = dplyr::case_when(
+                station_density_adj >= 0 & station_density_adj < quant_cd[2] ~ "1",
+                station_density_adj >= quant_cd[2] & station_density_adj < quant_cd[3] ~ "2",
+                station_density_adj >= quant_cd[3] & station_density_adj < quant_cd[4] ~ "3",
+                station_density_adj >= quant_cd[4] & station_density_adj < quant_cd[5] ~ "4",
+                station_density_adj >= quant_cd[5] & station_density_adj < quant_cd[6] ~ "5",
+                station_density_adj >= quant_cd[6] & station_density_adj < quant_cd[7] ~ "6",
+                station_density_adj >= quant_cd[7] & station_density_adj < quant_cd[8] ~ "7",
+                station_density_adj >= quant_cd[8] & station_density_adj < quant_cd[9] ~ "8",
+                station_density_adj >= quant_cd[9] & station_density_adj < quant_cd[10] ~ "9",
+                station_density_adj >= quant_cd[10] & station_density_adj <= quant_cd[11] ~ "10"
             ),
-            car_density_cat = factor(
-                car_density_cat,
+            station_density_cat = factor(
+                station_density_cat,
                 levels = seq(1, 10, 1)
             )
         )
@@ -135,7 +135,7 @@ making_station_density <- function(
     map_cd_cat <- ggplot()+
         geom_sf(
             data = cardensity_stations_clean_sf,
-            aes(geometry = geometry, fill = car_density_cat),
+            aes(geometry = geometry, fill = station_density_cat),
             col = ggplot2::alpha("black", 0.1)
         )+
         scale_fill_viridis_d(
@@ -183,9 +183,9 @@ making_station_density <- function(
     # adjust values for France
     avg_prices_cd <- avg_prices_cd |>
         dplyr::mutate(
-            car_density_cat = dplyr::case_when(
+            station_density_cat = dplyr::case_when(
                 country == "FR" ~ "0",
-                TRUE ~ car_density_cat
+                TRUE ~ station_density_cat
             )
         )
 
@@ -202,7 +202,7 @@ making_station_density <- function(
 
     # estimation function
     est_fun <- function(moddata, depvar = c("diesel", "e10"), pp_cat) {
-        var_aux <- rlang::sym("car_density_cat")
+        var_aux <- rlang::sym("station_density_cat")
         moddata_short <- moddata |>
             dplyr::filter(!!var_aux == "0" | !!var_aux == pp_cat)
 
@@ -273,7 +273,7 @@ making_station_density <- function(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "hetero_car_density.xlsx"
+            "hetero_station_density.xlsx"
         )
     )
 
@@ -393,7 +393,7 @@ making_station_density <- function(
 
     # define estimation function
     est_fun_event <- function(moddata, depvar = c("diesel", "e10"), pp_cat) {
-        var_aux <- rlang::sym("car_density_cat")
+        var_aux <- rlang::sym("station_density_cat")
         moddata_short <- moddata |>
             dplyr::filter(!!var_aux == "0" | !!var_aux == pp_cat)
 
@@ -447,7 +447,7 @@ making_station_density <- function(
             file = file.path(
                 config_paths()[["output_path"]],
                 "estimation",
-                paste0("car_density_", result, ".tex")
+                paste0("station_density_", result, ".tex")
             ),
             digits = "r3", cluster = "station_id",
             dict = config_globals()[["coefnames"]],
@@ -520,7 +520,7 @@ making_station_density <- function(
             )
 
         # export table
-        filename <- paste0("car_density_", result, ".xlsx")
+        filename <- paste0("station_density_", result, ".xlsx")
         openxlsx::write.xlsx(
             final_prep,
             file.path(

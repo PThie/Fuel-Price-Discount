@@ -28,13 +28,13 @@ calculating_inequality_station_density <- function(
         as.data.frame()
     
     #----------------------------------------------
-    # summarise car density on municipality level
+    # summarise station density on municipality level
     # summarise stations on district level
 
-    cardensity_municipality <- microm_data_cleaned |>
+    stationdensity_municipality <- microm_data_cleaned |>
         dplyr::group_by(AGS) |>
         dplyr::summarise(
-            median_car_density = median(car_density, na.rm = TRUE)
+            median_station_density = median(station_density, na.rm = TRUE)
         ) |>
         # add district AGS
         dplyr::mutate(
@@ -50,46 +50,46 @@ calculating_inequality_station_density <- function(
         ) |>
         as.data.frame()
 
-    # merge station count to car density
-    cardensity_stations <- merge(
-        cardensity_municipality,
+    # merge station count to station density
+    stationdensity_stations <- merge(
+        stationdensity_municipality,
         stations_districts,
         by = "AGS_district",
         all.x = TRUE
     )
 
-    # clean car density data
-    # adjust median municipality car density by number of stations per district
-    cardensity_stations_clean <- cardensity_stations |>
+    # clean station density data
+    # adjust median municipality station density by number of stations per district
+    stationdensity_stations_clean <- stationdensity_stations |>
         dplyr::mutate(
-            car_density_adj = count_stations / median_car_density 
+            station_density_adj = count_stations / median_station_density 
         ) 
 
     #--------------------------------------------------
     # keep only relevant columns
     # construct district measure
 
-    # overall mean car density
-    overall_mean_car_density <- mean(
-        cardensity_stations_clean$car_density_adj,
+    # overall mean station density
+    overall_mean_station_density <- mean(
+        stationdensity_stations_clean$station_density_adj,
         na.rm = TRUE
     )
 
-    cardensity_district <- cardensity_stations_clean |>
-        dplyr::select(AGS_munic = AGS, car_density_adj, AGS_district) |>
-        # summarise car density on district level
+    stationdensity_district <- stationdensity_stations_clean |>
+        dplyr::select(AGS_munic = AGS, station_density_adj, AGS_district) |>
+        # summarise station density on district level
         dplyr::group_by(AGS_district) |>
         dplyr::summarise(
-            mean_car_density_adj = mean(car_density_adj, na.rm = TRUE),
-            std_car_density_adj = sd(car_density_adj, na.rm = TRUE),
-            mean_dev_car_density_adj = (
-                (mean_car_density_adj - overall_mean_car_density) / overall_mean_car_density
+            mean_station_density_adj = mean(station_density_adj, na.rm = TRUE),
+            std_station_density_adj = sd(station_density_adj, na.rm = TRUE),
+            mean_dev_station_density_adj = (
+                (mean_station_density_adj - overall_mean_station_density) / overall_mean_station_density
             ) * 100
         )
 
     # merge regional effects
-    cardensity_regional_effects <- merge(
-        cardensity_district,
+    stationdensity_regional_effects <- merge(
+        stationdensity_district,
         regional_effects_prep,
         by.x = "AGS_district",
         by.y = "ags_district",
@@ -98,31 +98,31 @@ calculating_inequality_station_density <- function(
 
     # generate plot
     plot_function <- function(var) {
-        # correlation between car density and pass-through rate
+        # correlation between station density and pass-through rate
         cor_pp_pass <- cor(
-            cardensity_regional_effects[[var]],
-            cardensity_regional_effects$mean_dev_car_density_adj
+            stationdensity_regional_effects[[var]],
+            stationdensity_regional_effects$mean_dev_station_density_adj
         )
 
         # file name
         if (var == "passthrough_diesel") {
-            filename <- "inequality_cardensity_diesel.png"
+            filename <- "inequality_station_density_diesel.png"
         } else {
-            filename <- "inequality_cardensity_petrol.png"
+            filename <- "inequality_station_density_petrol.png"
         }
 
         plot <- ggplot(
-            data = cardensity_regional_effects,
+            data = stationdensity_regional_effects,
             aes(
                 x = .data[[var]],
-                y = mean_dev_car_density_adj
+                y = mean_dev_station_density_adj
             )
         )+
             geom_point(size = 2)+
             # highlight the largest cities
             geom_point(
-                data = cardensity_regional_effects |>
-                    dplyr::filter(ags_district %in% c("11000", "02000", "09162")),
+                data = stationdensity_regional_effects |>
+                    dplyr::filter(AGS_district %in% c("11000", "02000", "09162")),
                 size = 2,
                 color = "red"
             )+
@@ -152,8 +152,8 @@ calculating_inequality_station_density <- function(
         plot_labels <- plot+
             # add labels for the largest cities
             geom_label(
-                data = cardensity_regional_effects |>
-                    dplyr::filter(ags_district %in% c("11000", "02000", "09162")),
+                data = stationdensity_regional_effects |>
+                    dplyr::filter(AGS_district %in% c("11000", "02000", "09162")),
                 aes(label = c(
                     "11000" = "Berlin",
                     "02000" = "Hamburg",
@@ -171,7 +171,9 @@ calculating_inequality_station_density <- function(
                 "graphs",
                 filename
             ),
-            dpi = config_globals()[["owndpi"]]
+            dpi = config_globals()[["owndpi"]],
+            width = 12,
+            height = 9
         ))
     }
 
