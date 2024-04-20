@@ -250,7 +250,7 @@ plotting_fuel_consumption <- function() {
             xend = 6,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[3]
+            col = config_globals()[["java_five_colors"]][3]
         )+
         geom_segment(
             data = avg_fuel_consumption,
@@ -260,7 +260,7 @@ plotting_fuel_consumption <- function() {
             xend = 8,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[3]
+            col = config_globals()[["java_five_colors"]][3]
         )+
         geom_segment(
             data = avg_fuel_consumption,
@@ -270,7 +270,7 @@ plotting_fuel_consumption <- function() {
             xend = 12,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[3]
+            col = config_globals()[["java_five_colors"]][3]
         )+
         # diesel
         geom_segment(
@@ -281,7 +281,7 @@ plotting_fuel_consumption <- function() {
             xend = 6,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[1]
+            col = config_globals()[["java_five_colors"]][1]
         )+
         geom_segment(
             data = avg_fuel_consumption,
@@ -291,7 +291,7 @@ plotting_fuel_consumption <- function() {
             xend = 8,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[1]
+            col = config_globals()[["java_five_colors"]][1]
         )+
         geom_segment(
             data = avg_fuel_consumption,
@@ -301,7 +301,7 @@ plotting_fuel_consumption <- function() {
             xend = 12,
             linewidth = 0.8,
             linetype = "dashed",
-            col = pal[1]
+            col = config_globals()[["java_five_colors"]][1]
         )+
         theme(
             legend.text = element_text(size = 17),
