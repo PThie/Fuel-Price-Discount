@@ -42,7 +42,7 @@ calculating_affected_population <- function(
             working_population = sum(working_population, na.rm = TRUE),
             total_purch_power = sum(purch_power, na.rm = TRUE),
             purch_power_pp = total_purch_power / people_total,
-            avg_car_density = mean(car_density, na.rm = TRUE)
+            avg_station_density = mean(station_density, na.rm = TRUE)
         )
     
     # merge to estimated effects
@@ -130,13 +130,13 @@ calculating_affected_population <- function(
     )
 
     #----------------------------------------------
-    # calculate average income and car density per pass-through break
+    # calculate average income and station density per pass-through break
 
-    avg_income_car_density <- regional_effects_people |>
+    avg_income_station_density <- regional_effects_people |>
         dplyr::group_by(breaks) |>
         dplyr::summarise(
             avg_income = mean(purch_power_pp, na.rm = TRUE),
-            avg_car_density = mean(avg_car_density, na.rm = TRUE)
+            avg_station_density = mean(avg_station_density, na.rm = TRUE)
         ) |>
         as.data.frame()
 
@@ -145,39 +145,39 @@ calculating_affected_population <- function(
         dplyr::summarise(
             breaks = "Overall",
             avg_income = mean(purch_power_pp, na.rm = TRUE),
-            avg_car_density = mean(avg_car_density, na.rm = TRUE)
+            avg_station_density = mean(avg_station_density, na.rm = TRUE)
         ) |>
         as.data.frame()
 
-    # bind overall averages to avg_income_car_density
-    avg_income_car_density <- rbind(avg_income_car_density, overall_avg)
+    # bind overall averages to avg_income_station_density
+    avg_income_station_density <- rbind(avg_income_station_density, overall_avg)
 
     # export
     openxlsx::write.xlsx(
-        avg_income_car_density,
+        avg_income_station_density,
         file.path(
             config_paths()[["output_path"]],
             "descriptives",
-            "avg_income_car_density_by_breaks.xlsx"
+            "avg_income_station_density_by_breaks.xlsx"
         ),
         rowNames = FALSE
     )
 
     #----------------------------------------------
-    # calculate correlation between income and car density at district level
+    # calculate correlation between income and station density at district level
 
-    corr_income_car_density <- cor(
+    corr_income_station_density <- cor(
         people_district$purch_power_pp,
-        people_district$avg_car_density
+        people_district$avg_station_density
     )
 
     # export
     openxlsx::write.xlsx(
-        corr_income_car_density,
+        corr_income_station_density,
         file.path(
             config_paths()[["output_path"]],
             "descriptives",
-            "correlation_income_car_density_districts.xlsx"
+            "correlation_income_station_density_districts.xlsx"
         ),
         rowNames = FALSE
     )
