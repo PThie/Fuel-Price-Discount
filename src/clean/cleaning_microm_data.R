@@ -49,7 +49,7 @@ cleaning_microm_data <- function(
             car_density = r1_mpi_w_dichte,
             purch_power = r1_kkr_w_summe,
             people_total = r1_ewa_a_gesamt,
-            r1_mba_a_haushalt = num_households
+            num_households = r1_mba_a_haushalt
         )
 
     #--------------------------------------------------
