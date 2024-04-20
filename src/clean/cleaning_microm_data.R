@@ -20,6 +20,7 @@ cleaning_microm_data <- function(
         dplyr::filter(year == 2020) |>
         dplyr::select(
             r1_id, r1_mpi_w_dichte, r1_kkr_w_summe, r1_ewa_a_gesamt,
+            r1_mba_a_haushalt,
             r1_eag_p_m15bis18, r1_eag_p_w15bis18,
             r1_eag_p_m18bis20, r1_eag_p_w18bis20,
             r1_eag_p_m20bis25, r1_eag_p_w20bis25, 
@@ -47,7 +48,8 @@ cleaning_microm_data <- function(
         dplyr::rename(
             car_density = r1_mpi_w_dichte,
             purch_power = r1_kkr_w_summe,
-            people_total = r1_ewa_a_gesamt
+            people_total = r1_ewa_a_gesamt,
+            r1_mba_a_haushalt = num_households
         )
 
     #--------------------------------------------------
