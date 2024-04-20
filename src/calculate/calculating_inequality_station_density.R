@@ -1,6 +1,7 @@
 calculating_inequality_station_density <- function(
     regional_effect_district = NA,
-    microm_data_cleaned = NA
+    microm_data_cleaned = NA,
+    german_stations = NA
 ) {
     #' @title Calculate inequality in station density
     #'
