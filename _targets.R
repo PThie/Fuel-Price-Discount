@@ -364,6 +364,20 @@ targets_analysis <- rlang::list2(
             regional_effect_district = regional_effect_district,
             microm_data_cleaned = microm_data_cleaned
         )
+    ),
+    #--------------------------------------------------
+    # Fuel consumption by income groups
+    tar_fst(
+        fuel_consumption_income_groups,
+        calculating_fuel_consumption_purch_power(
+            microm_data_cleaned = microm_data_cleaned
+        )
+    ),
+    #--------------------------------------------------
+    # Plotting overall fuel consumption
+    tar_target(
+        fuel_consumption_plots,
+        plotting_fuel_consumption()
     )
 )
 
