@@ -12,7 +12,7 @@ estimating_regional_effect <- function(
     #' @param german_stations German station information
     #' @param german_districts German district information
     #' 
-    #' @return NULL, Estimation results as map
+    #' @return Returns data frame with regional effects and maps
     #' @author Patrick Thiel
     
     #----------------------------------------------
@@ -250,5 +250,5 @@ estimating_regional_effect <- function(
     #--------------------------------------------------
     # return
 
-    return(NULL)
+    return(results)
 }
