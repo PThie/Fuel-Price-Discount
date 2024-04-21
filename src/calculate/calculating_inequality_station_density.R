@@ -126,6 +126,9 @@ calculating_inequality_station_density <- function(
                 size = 2,
                 color = "red"
             )+
+            scale_y_continuous(
+                labels = scales::comma
+            )+
             geom_smooth(
                 method = "lm",
                 formula = y ~ x,
@@ -153,12 +156,15 @@ calculating_inequality_station_density <- function(
             # add labels for the largest cities
             geom_label(
                 data = stationdensity_regional_effects |>
-                    dplyr::filter(AGS_district %in% c("11000", "02000", "09162")),
-                aes(label = c(
-                    "11000" = "Berlin",
-                    "02000" = "Hamburg",
-                    "09162" = "Munich"
-                )),
+                    dplyr::filter(AGS_district %in% c("11000", "02000", "09162")) |>
+                    dplyr::mutate(
+                        city_name = dplyr::case_when(
+                            AGS_district == "11000" ~ "Berlin",
+                            AGS_district == "02000" ~ "Hamburg",
+                            AGS_district == "09162" ~ "Munich"
+                        )
+                    ),
+                aes(label = city_name),
                 size = 6,
                 vjust = -0.3,
                 fill = "white"
@@ -172,8 +178,8 @@ calculating_inequality_station_density <- function(
                 filename
             ),
             dpi = config_globals()[["owndpi"]],
-            width = 12,
-            height = 9
+            width = 13,
+            height = 10
         ))
     }
 
