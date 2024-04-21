@@ -34,7 +34,7 @@ calculating_inequality_station_density <- function(
     stationdensity_municipality <- microm_data_cleaned |>
         dplyr::group_by(AGS) |>
         dplyr::summarise(
-            median_station_density = median(station_density, na.rm = TRUE)
+            median_car_density = median(car_density, na.rm = TRUE)
         ) |>
         # add district AGS
         dplyr::mutate(
@@ -62,7 +62,7 @@ calculating_inequality_station_density <- function(
     # adjust median municipality station density by number of stations per district
     stationdensity_stations_clean <- stationdensity_stations |>
         dplyr::mutate(
-            station_density_adj = count_stations / median_station_density 
+            station_density_adj = count_stations / median_car_density 
         ) 
 
     #--------------------------------------------------
