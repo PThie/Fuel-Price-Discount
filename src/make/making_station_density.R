@@ -27,7 +27,7 @@ making_station_density <- function(
     cardensity_municipality <- microm_data_cleaned |>
         dplyr::group_by(AGS) |>
         dplyr::summarise(
-            median_station_density = median(station_density, na.rm = TRUE)
+            median_car_density = median(car_density, na.rm = TRUE)
         ) |>
         # add district AGS
         dplyr::mutate(
@@ -57,7 +57,7 @@ making_station_density <- function(
     cardensity_stations_clean <- cardensity_stations |>
         dplyr::select(-AGS_district) |>
         dplyr::mutate(
-            station_density_adj = count_stations / median_station_density 
+            station_density_adj = count_stations / median_car_density 
         )
 
     # get quantiles

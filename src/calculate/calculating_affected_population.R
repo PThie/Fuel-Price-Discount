@@ -42,7 +42,7 @@ calculating_affected_population <- function(
             working_population = sum(working_population, na.rm = TRUE),
             total_purch_power = sum(purch_power, na.rm = TRUE),
             purch_power_pp = total_purch_power / people_total,
-            avg_station_density = mean(station_density, na.rm = TRUE)
+            avg_car_density = mean(car_density, na.rm = TRUE)
         )
     
     # merge to estimated effects
@@ -136,7 +136,7 @@ calculating_affected_population <- function(
         dplyr::group_by(breaks) |>
         dplyr::summarise(
             avg_income = mean(purch_power_pp, na.rm = TRUE),
-            avg_station_density = mean(avg_station_density, na.rm = TRUE)
+            avg_car_density = mean(avg_car_density, na.rm = TRUE)
         ) |>
         as.data.frame()
 
@@ -145,7 +145,7 @@ calculating_affected_population <- function(
         dplyr::summarise(
             breaks = "Overall",
             avg_income = mean(purch_power_pp, na.rm = TRUE),
-            avg_station_density = mean(avg_station_density, na.rm = TRUE)
+            avg_car_density = mean(avg_car_density, na.rm = TRUE)
         ) |>
         as.data.frame()
 
@@ -168,7 +168,7 @@ calculating_affected_population <- function(
 
     corr_income_station_density <- cor(
         people_district$purch_power_pp,
-        people_district$avg_station_density
+        people_district$avg_car_density
     )
 
     # export
