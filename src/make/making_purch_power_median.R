@@ -1,6 +1,7 @@
 making_purch_power_median <- function(
     fuel_prices_april_august = NA,
-    german_stations = NA
+    german_stations = NA,
+    microm_data_cleaned = NA
 ) {
     #' @title Analysis purchasing power based on median classification
     #' 
@@ -10,6 +11,7 @@ making_purch_power_median <- function(
     #' @param fuel_prices_april_august Price data for Germany and France for
     #' April to August 2022
     #' @param german_stations German station information
+    #' @param microm_data_cleaned Microm data cleaned (RWI-GEO-GRID)
     #' 
     #' @author Patrick Thiel
 

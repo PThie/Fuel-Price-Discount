@@ -408,7 +408,8 @@ targets_analysis <- rlang::list2(
         purchasing_power_median,
         making_purch_power_median(
             fuel_prices_april_august = fuel_prices_april_august,
-            german_stations = german_stations
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned
         )
     ),
     #--------------------------------------------------
