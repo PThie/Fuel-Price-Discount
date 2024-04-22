@@ -142,7 +142,9 @@ calculating_inequality_purch_power <- function(
                 "graphs",
                 filename
             ),
-            dpi = config_globals()[["owndpi"]]
+            dpi = config_globals()[["owndpi"]],
+            width = 13,
+            height = 10
         ))
     }
 
