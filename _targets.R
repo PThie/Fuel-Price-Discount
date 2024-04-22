@@ -403,6 +403,15 @@ targets_analysis <- rlang::list2(
         )
     ),
     #--------------------------------------------------
+    # Purchasing power estimations based on median classification
+    tar_target(
+        purchasing_power_median,
+        making_purch_power_median(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations
+        )
+    ),
+    #--------------------------------------------------
     # Google trends
     tar_file_read(
         google_trends_data,
