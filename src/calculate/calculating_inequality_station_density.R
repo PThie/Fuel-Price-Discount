@@ -11,6 +11,7 @@ calculating_inequality_station_density <- function(
     #' 
     #' @param regional_effect_district Regional effects on the district level.
     #' @param microm_data_cleaned Clean microm data (RWI-GEO-GRID).
+    #' @param german_stations German stations.
     #' 
     #' @return NULL, returns graphs.
     #' @author Patrick Thiel
