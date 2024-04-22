@@ -31,6 +31,7 @@ suppressWarnings(suppressPackageStartupMessages(
         library(haven)
         library(data.table)
         library(stats)
+        library(lubridate)
     }
 ))
 
@@ -400,10 +401,46 @@ targets_analysis <- rlang::list2(
             microm_data_cleaned = microm_data_cleaned,
             german_stations = german_stations
         )
+    ),
+    #--------------------------------------------------
+    # Google trends
+    tar_file_read(
+        google_trends_data,
+        file.path(
+            config_paths()[["data_path"]],
+            "google_trends"
+        ),
+        reading_google_trends(!!.x)
+    ),
+    #--------------------------------------------------
+    # Relating google scores and pass-through rates
+    tar_file_read(
+        time_effects_diesel,
+        file.path(
+            config_paths()[["output_path"]],
+            "estimation",
+            "did_est_Germany_diesel.xlsx"
+        ),
+        reading_time_effects(!!.x, fuel_type = "diesel")
+    ),
+    tar_file_read(
+        time_effects_petrol,
+        file.path(
+            config_paths()[["output_path"]],
+            "estimation",
+            "did_est_Germany_e10.xlsx"
+        ),
+        reading_time_effects(!!.x, fuel_type = "e10")
+    ),
+    tar_target(
+        google_scores_passthrough,
+        estimating_search_behavior_passthrough(
+            time_effects_diesel = time_effects_diesel,
+            time_effects_petrol = time_effects_petrol,
+            google_data = google_trends_data
+        )
     )
 )
-
-# TODO: Separate file loading, i.e. load data once as own target object (applies e.g. to microm data)
 
 #--------------------------------------------------
 # combine everything
