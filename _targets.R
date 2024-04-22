@@ -449,6 +449,14 @@ targets_analysis <- rlang::list2(
             time_effects_petrol = time_effects_petrol,
             google_trends_data = google_trends_data
         )
+    ),
+    #--------------------------------------------------
+    # Testing the parallel trend assumption using the HonestDiD approach
+    tar_target(
+        honest_did,
+        testing_parallel_trends(
+            fuel_prices_april_august = fuel_prices_april_august
+        )
     )
 )
 
