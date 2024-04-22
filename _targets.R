@@ -437,7 +437,7 @@ targets_analysis <- rlang::list2(
         estimating_search_behavior_passthrough(
             time_effects_diesel = time_effects_diesel,
             time_effects_petrol = time_effects_petrol,
-            google_data = google_trends_data
+            google_trends_data = google_trends_data
         )
     )
 )
