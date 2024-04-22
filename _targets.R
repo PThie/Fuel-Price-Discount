@@ -389,6 +389,17 @@ targets_analysis <- rlang::list2(
             microm_data_cleaned = microm_data_cleaned,
             german_stations = german_stations
         )
+    ),
+    #--------------------------------------------------
+    # Determining purchasing power in relation to the national level
+    # Relate it also to the pass-through rates
+    tar_target(
+        purchasing_power_inequality,
+        calculating_inequality_purch_power(
+            regional_effect_district = regional_effect_district,
+            microm_data_cleaned = microm_data_cleaned,
+            german_stations = german_stations
+        )
     )
 )
 
