@@ -31,7 +31,8 @@ estimating_search_behavior_passthrough <- function(
         # add google trends data
         merged_data <- dplyr::left_join(
             time_effects,
-            google_data,
+            google_trends_data |>
+                dplyr::filter(keyword == "tankrabatt"),
             by = "date"
         )
 
