@@ -454,7 +454,7 @@ targets_analysis <- rlang::list2(
     # Testing the parallel trend assumption using the HonestDiD approach
     tar_target(
         honest_did,
-        testing_parallel_trends(
+        testing_robust_trends(
             fuel_prices_april_august = fuel_prices_april_august
         )
     )
