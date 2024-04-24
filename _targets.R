@@ -422,6 +422,12 @@ targets_analysis <- rlang::list2(
         ),
         reading_google_trends(!!.x)
     ),
+    tar_target(
+        google_trends_plots,
+        plotting_google_trends(
+            google_trends_data = google_trends_data
+        )
+    ),
     #--------------------------------------------------
     # Relating google scores and pass-through rates
     tar_file_read(
