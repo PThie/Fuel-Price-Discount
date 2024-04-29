@@ -1,6 +1,3 @@
-# TODO: once done zip the folder "transferred" in the original routine "gasprices"
-# and move to archive in this project (to preserve original coding)
-
 # NOTE: In case the error shows up:
 # Error: OGRCreateCoordinateTransformation(): transformation not available
 # Run before loading the packages
