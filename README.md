@@ -3,6 +3,7 @@
 This repository provides the coding for the research project "Heterogeneous Pass-through over Space and Time: The Case of Germany’s Fuel Tax Discount".
 
 Authors: Manuel Frondel, Patrick Thiel and Colin Vance
+
 Code author: Patrick Thiel
 
 ## Abstract
