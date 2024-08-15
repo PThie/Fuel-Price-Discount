@@ -8,7 +8,7 @@ testing_robust_trends <- function(
     #' 
     #' @param fuel_prices_april_august Fuel price data April to August 2022
     #' 
-    #' @return NULL, Estimation plot for HonestDiD
+    #' @return List with honestDiD results
     #' @author Patrick Thiel
     
     #----------------------------------------------
@@ -51,7 +51,7 @@ testing_robust_trends <- function(
         )
 
         # estimation model
-        est_mod <- feols(
+        est_mod <- fixest::feols(
             fml = fm,
             data = moddata,
             cluster = regionFE
@@ -62,215 +62,235 @@ testing_robust_trends <- function(
     #----------------------------------------------
     # estimation
 
-    mod_list_event <- list()
-
     # dependent variables
     dep_cases <- c("diesel", "e10")
 
-    short_data <- avg_prices_prep |>
-        dplyr::filter(date <= "2022-06-07")
+    # function to perform honestDiD
+    performing_honestdid <- function(
+        start_date = NA,
+        end_date = NA
+    ) {
+        #' @param start_date Start date of the post-period that should be tested
+        #' @param end_date End date of the post-period that should be tested
+        
+        #--------------------------------------------------
+        # subset the data
+
+        preperiod_data <- avg_prices_prep |>
+            dplyr::filter(date < "2022-06-01")
+
+        postperiod_data <- avg_prices_prep |>
+            dplyr::filter(date >= start_date) |>
+            dplyr::filter(date <= end_date)
+
+        short_data <- rbind(
+            preperiod_data,
+            postperiod_data
+        )
     
-    # loop through gasoline types
-    for(dep_case in dep_cases){
-        suppressMessages(mod <- est_fun(
-            moddata = short_data,
-            depvar = dep_case,
-            regionFE = "station_id"
-        ))
-        mod_list_event[[dep_case]] <- mod
-    }
+        #--------------------------------------------------
+        # estimate model
 
-    # test trends
-    trend_test_list <- list()
-    for(dep_case in dep_cases){
-        betahat <- summary(mod_list_event[[dep_case]])$coefficients
-        sigma <- summary(mod_list_event[[dep_case]])$cov.scaled
+        mod_list_event <- list()
+        # loop through gasoline types
+        for(dep_case in dep_cases){
+            suppressMessages(mod <- est_fun(
+                moddata = short_data,
+                depvar = dep_case,
+                regionFE = "station_id"
+            ))
+            mod_list_event[[dep_case]] <- mod
+        }
+    
+        #--------------------------------------------------
+        # test trends
 
-        # define the M
-        ms <- seq(0.5, 2, by = 0.5)
+        trend_test_list <- list()
+        for(dep_case in dep_cases){
+            betahat <- summary(mod_list_event[[dep_case]])$coefficients
+            sigma <- summary(mod_list_event[[dep_case]])$cov.scaled
 
-        # define number of periods
-        numpreprds <- 60
-        numpostprds <- 7
+            # define the M
+            ms <- seq(0.5, 2, by = 0.5)
 
-        # period 1
-        firstperiod <- HonestDiD::createSensitivityResults_relativeMagnitudes(
-            betahat = betahat,
-            sigma = sigma,
-            numPrePeriods = numpreprds,
-            numPostPeriods = numpostprds,
-            Mbarvec = ms,
-            grid.lb = -1,
-            grid.ub = 1
-        ) |>
-        dplyr::mutate(
-            period = 1,
-            result = "sensitivity"
-        ) |>
-        as.data.frame()
+            # define number of periods
+            numpreprds <- 60
+            numpostprds <- 7
 
-        firstperiod_original <- HonestDiD::constructOriginalCS(
-            betahat = betahat,
-            sigma = sigma,
-            numPrePeriods = numpreprds,
-            numPostPeriods = numpostprds
-        ) |>
-        dplyr::mutate(
-            period = 1,
-            result = "original",
-            Mbar = 0
-        ) |>
-        as.data.frame()
-
-        # period 2 to 7
-        otherperiod_trends_list <- list()
-        periods <- seq(2, 7, 1)
-        for(prd in periods) {
-            lvec <- HonestDiD::basisVector(prd, numpostprds)
-            otherperiod <- HonestDiD::createSensitivityResults_relativeMagnitudes(
+            # period 1
+            firstperiod <- HonestDiD::createSensitivityResults_relativeMagnitudes(
                 betahat = betahat,
                 sigma = sigma,
                 numPrePeriods = numpreprds,
                 numPostPeriods = numpostprds,
                 Mbarvec = ms,
                 grid.lb = -1,
-                grid.ub = 1,
-                l_vec = lvec
+                grid.ub = 1
             ) |>
             dplyr::mutate(
-                period = prd,
+                period = 1,
                 result = "sensitivity"
             ) |>
             as.data.frame()
 
-            otherperiod_original <- HonestDiD::constructOriginalCS(
+            firstperiod_original <- HonestDiD::constructOriginalCS(
                 betahat = betahat,
                 sigma = sigma,
                 numPrePeriods = numpreprds,
-                numPostPeriods = numpostprds,
-                l_vec = lvec
+                numPostPeriods = numpostprds
             ) |>
             dplyr::mutate(
-                period = prd,
+                period = 1,
                 result = "original",
                 Mbar = 0
             ) |>
             as.data.frame()
 
-            results <- rbind(
-                otherperiod,
-                otherperiod_original
-            )
+            # period 2 to 7
+            otherperiod_trends_list <- list()
+            periods <- seq(2, 7, 1)
+            for(prd in periods) {
+                lvec <- HonestDiD::basisVector(prd, numpostprds)
+                otherperiod <- HonestDiD::createSensitivityResults_relativeMagnitudes(
+                    betahat = betahat,
+                    sigma = sigma,
+                    numPrePeriods = numpreprds,
+                    numPostPeriods = numpostprds,
+                    Mbarvec = ms,
+                    grid.lb = -1,
+                    grid.ub = 1,
+                    l_vec = lvec
+                ) |>
+                dplyr::mutate(
+                    period = prd,
+                    result = "sensitivity"
+                ) |>
+                as.data.frame()
 
-            naming <- paste0("period_", prd)
-            otherperiod_trends_list[[naming]] <- results
+                otherperiod_original <- HonestDiD::constructOriginalCS(
+                    betahat = betahat,
+                    sigma = sigma,
+                    numPrePeriods = numpreprds,
+                    numPostPeriods = numpostprds,
+                    l_vec = lvec
+                ) |>
+                dplyr::mutate(
+                    period = prd,
+                    result = "original",
+                    Mbar = 0
+                ) |>
+                as.data.frame()
+
+                results <- rbind(
+                    otherperiod,
+                    otherperiod_original
+                )
+
+                naming <- paste0("period_", prd)
+                otherperiod_trends_list[[naming]] <- results
+            }
+        
+            # make one data frame
+            otherperiod_trends <- data.table::rbindlist(otherperiod_trends_list)
+            trends <- rbind(firstperiod, firstperiod_original, otherperiod_trends)
+
+            # save
+            trend_test_list[[dep_case]] <- trends
         }
 
-        # make one data frame
-        otherperiod_trends <- data.table::rbindlist(otherperiod_trends_list)
-        trends <- rbind(firstperiod, firstperiod_original, otherperiod_trends)
+        #----------------------------------------------
+        # join in one table
 
-        # save
-        trend_test_list[[dep_case]] <- trends
-    }
+        one_week_trends <- data.table::rbindlist(trend_test_list, idcol = TRUE) |>
+            dplyr::rename(fuel_type = 1)
 
-    # join in one table
-    one_week_trends <- data.table::rbindlist(trend_test_list, idcol = TRUE) |>
-        dplyr::rename(fuel_type = 1)
-    
-    # turn into factors
-    one_week_trends <- one_week_trends |>
-        dplyr::mutate(
-            mbar_labels = dplyr::case_when(
-                Mbar == 0 ~ "Original",
-                TRUE ~ paste0(Mbar)
-            ),
-            mbar_labels = factor(
-                mbar_labels,
-                levels = c("Original", "0.5", "1", "1.5", "2")
-            ),
-            period = factor(period, levels = seq(1, 7, 1))
-        )
+        # generate sequence of dates
+        max_date <- max(postperiod_data$date)
+        min_date <- min(postperiod_data$date)
+        seq_dates <- seq(min_date, max_date, by = "day")
 
-    # export
-    openxlsx::write.xlsx(
-        one_week_trends,
-        file.path(
-            config_paths()[["output_path"]],
-            "estimation",
-            "honestdid_one_week.xlsx"
-        ),
-        rowNames = FALSE
-    )
-
-    #----------------------------------------------
-    # plot for one-week trend
-
-    # define colors
-    pal <- MetBrewer::met.brewer(name = "Austria", n = 7)
-
-    # loop through fuel types
-    for(dep_case in dep_cases) {
-        # subset data
-        moddata <- one_week_trends |>
-            dplyr::filter(fuel_type == dep_case & Mbar != 0)
-
-        # generate plot
-        vio_plot <- ggplot(
-            data = moddata,
-            aes(
-                x = mbar_labels,
-                y = ub,
-                col = period
-            )
-        )+
-            geom_errorbar(
-                mapping = aes(
-                    ymin = lb,
-                    ymax = ub
-                ),
-                width = 0.15,
-                position = "dodge",
-                size = 1
-            )+
-            geom_hline(
-                yintercept = 0
-            )+
-            scale_color_manual(
-                name = "Days after FTD",
-                values = pal
-            )+
-            labs(
-                x = "M",
-                y = ""
-            )+
-            theme_classic()+
-            theme(
-                panel.border = element_rect(linewidth = 1, fill = NA),
-                axis.text = element_text(size = 19),
-                axis.title = element_text(size = 20),
-                legend.key.size = unit(1, "cm"),
-                legend.title = element_text(size = 20),
-                legend.text = element_text(size = 20),
-                legend.position = "bottom"
-            )
+        # test that are dates are in sequence
+        tar_assert_true(all(seq_dates %in% postperiod_data$date))
         
+        # turn into factors
+        one_week_trends <- one_week_trends |>
+            dplyr::mutate(
+                mbar_labels = dplyr::case_when(
+                    Mbar == 0 ~ "Original",
+                    TRUE ~ paste0(Mbar)
+                ),
+                mbar_labels = factor(
+                    mbar_labels,
+                    levels = c("Original", "0.5", "1", "1.5", "2")
+                ),
+                period = factor(period, levels = seq(1, 7, 1)),
+                period_label = dplyr::case_when(
+                    period == 1 ~ seq_dates[1],
+                    period == 2 ~ seq_dates[2],
+                    period == 3 ~ seq_dates[3],
+                    period == 4 ~ seq_dates[4],
+                    period == 5 ~ seq_dates[5],
+                    period == 6 ~ seq_dates[6],
+                    period == 7 ~ seq_dates[7]
+                )
+            )
+
         # export
-        filename <- paste0("honestdid_plot_one_week_", dep_case, ".png")
-        suppressMessages(ggsave(
-            plot = vio_plot,
+        openxlsx::write.xlsx(
+            one_week_trends,
             file.path(
                 config_paths()[["output_path"]],
-                "graphs",
-                filename
+                "estimation",
+                paste0(
+                    "honestdid_",
+                    start_date,
+                    "_",
+                    end_date,
+                    ".xlsx"
+                )
             ),
-            height = 8,
-            width = 10
-        ))
+            rowNames = FALSE
+        )
+
+        #--------------------------------------------------
+        # return
+
+        return(one_week_trends)
     }
+
+    #--------------------------------------------------
+    # generate honestDiD results
+
+    honestdid_results_June <- performing_honestdid(
+        start_date = "2022-06-01",
+        end_date = "2022-06-07"
+    )
+
+    honestdid_results_July <- performing_honestdid(
+        start_date = "2022-07-01",
+        end_date = "2022-07-07"
+    )
+
+    honestdid_results_August <- performing_honestdid(
+        start_date = "2022-08-01",
+        end_date = "2022-08-07"
+    )
+
+    honestdid_results_August_end <- performing_honestdid(
+        start_date = "2022-08-25",
+        end_date = "2022-08-31"
+    )
+
+    # group into list
+    honestdid_results_list <- list(
+        honestdid_results_June,
+        honestdid_results_July,
+        honestdid_results_August,
+        honestdid_results_August_end
+    )
 
     #--------------------------------------------------
     # return
 
-    return(NULL)
+    return(honestdid_results_list)
 }
