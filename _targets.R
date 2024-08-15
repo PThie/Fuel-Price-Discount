@@ -288,7 +288,9 @@ targets_analysis <- rlang::list2(
     tar_target(
         baseline_effects,
         estimating_baseline_effects(
-            fuel_prices_april_august = fuel_prices_april_august
+            price_data = fuel_prices_april_august,
+            suffix_export = "complete",
+            twoway_clustering = FALSE
         )
     ),
     #--------------------------------------------------
@@ -296,7 +298,8 @@ targets_analysis <- rlang::list2(
     tar_target(
         baseline_event_study,
         estimating_baseline_event_study(
-            fuel_prices_april_august = fuel_prices_april_august
+            price_data = fuel_prices_april_august,
+            suffix_export = "complete"
         )
     ),
     #--------------------------------------------------
@@ -432,7 +435,7 @@ targets_analysis <- rlang::list2(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_Germany_diesel.xlsx"
+            "did_est_Germany_diesel_complete.xlsx"
         ),
         reading_time_effects(!!.x, fuel_type = "diesel")
     ),
@@ -441,7 +444,7 @@ targets_analysis <- rlang::list2(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_Germany_e10.xlsx"
+            "did_est_Germany_e10_complete.xlsx"
         ),
         reading_time_effects(!!.x, fuel_type = "e10")
     ),
@@ -459,6 +462,103 @@ targets_analysis <- rlang::list2(
         honest_did,
         testing_robust_trends(
             fuel_prices_april_august = fuel_prices_april_august
+        )
+    ),
+    tar_target(
+        honest_did_days,
+        testing_robust_trends_dayspecific(
+            fuel_prices_april_august = fuel_prices_april_august
+        )
+    ),
+    tar_target(
+        honest_did_plots,
+        plotting_robust_trends(honest_did = honest_did)
+    ),
+    tar_target(
+        honest_did_days_plots,
+        plotting_robust_trends_dayspecific(
+            honest_did_days = honest_did_days
+        )
+    ),
+    #--------------------------------------------------
+    # Testing the effect in subset of states
+    # This tests the effect in the "northern" states which
+    #' are all states that do not share a border with France plus Bayern. This
+    #' test intends to show robustness against violations of the SUTVA assumption
+    #' by excluding states at the border and Bayern. It also tests for impacts
+    #' of the drought during that period.
+    tar_fst(
+        north_states_prices,
+        making_north_states(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations
+        )
+    ),
+    tar_target(
+        testing_states_baseline,
+        estimating_baseline_effects(
+            price_data = north_states_prices,
+            suffix_export = "north",
+            twoway_clustering = FALSE
+        )
+    ),
+    tar_target(
+        testing_states_event_study,
+        estimating_baseline_event_study(
+            price_data = north_states_prices,
+            suffix_export = "north"
+        )
+    ),
+    #--------------------------------------------------
+    # Baseline estimation with twoway clustering
+    tar_target(
+        testing_baseline_twoway_clustering,
+        estimating_baseline_effects(
+            price_data = fuel_prices_april_august,
+            suffix_export = "twoway",
+            twoway_clustering = TRUE
+        )
+    ),
+    #--------------------------------------------------
+    # Testing morning rush hour effects
+    # Reading raw German data (each individual change, not aggregated information)
+    tar_file(
+        german_fuel_price_file_raw,
+        file.path(
+            config_paths()[["data_path"]],
+            "german_fuel_data",
+            "fuel_prices_germany_raw.fst"
+        )
+    ),
+    tar_file_read(
+        german_fuel_prices_raw,
+        german_fuel_price_file_raw,
+        reading_german_fuel_prices(!!.x)
+    ),
+    tar_fst(
+        german_fuel_prices_april_august_raw,
+        subsetting_fuel_prices(
+            fuel_prices = german_fuel_prices_raw
+        )
+    ),
+    tar_fst(
+        german_fuel_prices_morning,
+        subsetting_morning_rush(
+            fuel_prices = german_fuel_prices_april_august_raw
+        )
+    ),
+    tar_fst(
+        fuel_prices_morning,
+        joining_germany_france(
+            german_fuel_prices = german_fuel_prices_morning,
+            french_fuel_prices = french_fuel_prices
+        )
+    ),
+    tar_target(
+        testing_morning_rush_event_study,
+        estimating_baseline_event_study(
+            price_data = fuel_prices_morning,
+            suffix_export = "morning_rush"
         )
     )
 )
