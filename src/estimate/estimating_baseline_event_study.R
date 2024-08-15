@@ -1,10 +1,14 @@
-estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
+estimating_baseline_event_study <- function(
+    price_data = NA,
+    suffix_export = NA
+) {
     #' @title Estimating an event study for the baseline
     #' 
     #' @description This function estimates an event study for the baseline
     #' comparing the day effects to the last day before implementing the FTD.
     #' 
-    #' @param fuel_prices_april_august Fuel price data April to August 2022
+    #' @param price_data Fuel price data April to August 2022
+    #' @param suffix_export Suffix for export files
     #' 
     #' @return Returns estimation results
     #' @author Patrick Thiel
@@ -13,7 +17,7 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
     # event study analysis
 
     # add time to treatment in days
-    avg_prices_event <- fuel_prices_april_august |>
+    avg_prices_event <- price_data |>
         dplyr::mutate(
             time_to_treatment = as.numeric(difftime(
                 as.Date(date, "%Y-%m-%d"), 
@@ -55,7 +59,13 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
             file = file.path(
                 config_paths()[["output_path"]],
                 "estimation",
-                paste0("did_est_Germany_", result, ".tex")
+                paste0(
+                    "did_est_Germany_",
+                    result,
+                    "_",
+                    suffix_export,
+                    ".tex"
+                )
             ),
             digits = "r3", cluster = "station_id",
             dict = config_globals()[["coefnames"]],
@@ -124,7 +134,13 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
             )
 
         # export table
-        filename <- paste0("did_est_Germany_", result, ".xlsx")
+        filename <- paste0(
+            "did_est_Germany_",
+            result,
+            "_",
+            suffix_export,
+            ".xlsx"
+        )
         openxlsx::write.xlsx(
             final_prep,
             file.path(
@@ -225,7 +241,12 @@ estimating_baseline_event_study <- function(fuel_prices_april_august = NA) {
             file.path(
                 config_paths()[["output_path"]],
                 "graphs",
-                paste0(result, "_baseline.png")
+                paste0(
+                    result,
+                    "_baseline_",
+                    suffix_export,
+                    ".png"
+                )
             ),
             dpi = 800,
             width = 8,
