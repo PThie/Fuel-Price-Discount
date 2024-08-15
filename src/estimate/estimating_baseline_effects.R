@@ -1,10 +1,16 @@
-estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
+estimating_baseline_effects <- function(
+    price_data = NA,
+    suffix_export = NA,
+    twoway_clustering = NA
+) {
     #' @title Estimating the impact of German Fuel Tax Discount
     #' 
     #' @description Estimating the impact of the German fuel tax discount (FTD)
     #' on fuel prices with a diff-in-diff approach.
     #' 
-    #' @param fuel_prices_april_august Fuel price data for April to August 2022
+    #' @param price_data Fuel price data for April to August 2022
+    #' @param suffix_export Suffix for export files
+    #' @param twoway_clustering Logical for twoway clustering
     #' 
     #' @return Returns estimation results
     #' @author Patrick Thiel
@@ -12,7 +18,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     #----------------------------------------------
     # general information
 
-    obs <- fuel_prices_april_august |>
+    obs <- price_data |>
         dplyr::group_by(country) |>
         dplyr::summarise(
             overall_n = n(),
@@ -25,7 +31,11 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
         file.path(
             config_paths()[["output_path"]],
             "descriptives",
-            "observations_est_period.xlsx"
+            paste0(
+                "observations_est_period_",
+                suffix_export,
+                ".xlsx"
+            )
         ),
         rowNames = FALSE
     )    
@@ -45,10 +55,11 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     suppressMessages(for(dep_case in dep_cases) {
         for(fe_case in fe_cases){
             mod <- est_fun(
-                moddata = fuel_prices_april_august,
+                moddata = price_data,
                 depvar = dep_case,
                 fixef = fe_case,
-                event = FALSE
+                event = FALSE,
+                twoway_clustering = twoway_clustering
             )
             mod_list_gastype[[fe_case]] <- mod
         }
@@ -58,7 +69,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     #----------------------------------------------
     # calculate the average prices in the FTD period
 
-    mean_prices_ftd <- fuel_prices_april_august |>
+    mean_prices_ftd <- price_data |>
         # after FTD started
         filter(treat_tankrabatt_de == "treated") |>
         # filter for Germany
@@ -141,7 +152,11 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_Germany_pass_through_SE.xlsx"
+            paste0(
+                "did_est_Germany_pass_through_SE_",
+                suffix_export,
+                ".xlsx"
+            )
         ),
         rowNames = FALSE
     )
@@ -149,11 +164,23 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     #----------------------------------------------
     # export estimation results with FE
 
-    min_date <- min(fuel_prices_april_august$date)
-    max_date <- max(fuel_prices_april_august$date)
+    min_date <- min(price_data$date)
+    max_date <- max(price_data$date)
+
+    if (twoway_clustering == TRUE) {
+        cluster_names <- c("station_id", "date")
+    } else {
+        cluster_names <- "station_id"
+    }
     
     for(dep_case in dep_cases){
-        filename <- paste0("did_est_Germany_FE_", dep_case, ".tex")
+        filename <- paste0(
+            "did_est_Germany_FE_",
+            dep_case,
+            "_",
+            suffix_export,
+            ".tex"
+        )
 
         fixest::esttex(
             mod_list_complete[[dep_case]][["none"]],
@@ -162,9 +189,13 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             mod_list_complete[[dep_case]][["time_region"]],
             headers = c("OLS", "regionFE", "timeFE", "bothFE"),
             title = paste("Restricted to", min_date, "to", max_date),
-            file = file.path(config_paths()[["output_path"]], "estimation", filename),
+            file = file.path(
+                config_paths()[["output_path"]],
+                "estimation",
+                filename
+            ),
             digits = "r3",
-            cluster = "station_id",
+            cluster = cluster_names,
             dict = config_globals()[["coefnames"]],
             replace = TRUE,
             signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
@@ -175,7 +206,7 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     # estimation like in Fuest et al. (2022; Perspektiven d. Wirtschaftspolitik)
 
     # restrict sample to one before and two weeks after FTD
-    restricted_sample <- fuel_prices_april_august |>
+    restricted_sample <- price_data |>
         dplyr::filter(date >= "2022-05-15" & date <= "2022-06-14")
 
     # define lists for storages
@@ -189,7 +220,8 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
                 moddata = restricted_sample,
                 depvar = dep_case,
                 fixef = fe_case,
-                event = FALSE
+                event = FALSE,
+                twoway_clustering = twoway_clustering
             )
             mod_list_gastype_restricted[[fe_case]] <- mod
         }
@@ -201,7 +233,13 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
     max_date <- max(restricted_sample$date)
     
     for(dep_case in dep_cases){
-        filename <- paste0("did_est_Germany_FE_restricted_", dep_case, ".tex")
+        filename <- paste0(
+            "did_est_Germany_FE_restricted_",
+            dep_case,
+            "_",
+            suffix_export,
+            ".tex"
+        )
 
         fixest::esttex(
             mod_list_complete_restricted[[dep_case]][["none"]],
@@ -210,8 +248,13 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
             mod_list_complete_restricted[[dep_case]][["time_region"]],
             headers = c("OLS", "regionFE", "timeFE", "bothFE"),
             title = paste("Restricted to", min_date, "to", max_date),
-            file = file.path(config_paths()[["output_path"]], "estimation", filename),
-            digits = "r3", cluster = "station_id",
+            file = file.path(
+                config_paths()[["output_path"]],
+                "estimation",
+                filename
+            ),
+            digits = "r3",
+            cluster = cluster_names,
             dict = config_globals()[["coefnames"]],
             replace = TRUE,
             signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
@@ -276,7 +319,11 @@ estimating_baseline_effects <- function(fuel_prices_april_august = NA) {
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_Germany_pass_through_SE_restricted.xlsx"
+            paste0(
+                "did_est_Germany_pass_through_SE_restricted_",
+                suffix_export,
+                ".xlsx"
+            )
         ),
         rowNames = FALSE
     )
