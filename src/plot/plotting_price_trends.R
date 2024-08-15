@@ -194,18 +194,18 @@ plotting_price_trends <- function(fuel_prices = NA) {
             ),
             angle = 90,
             vjust = -1,
-            size = 3,
+            size = 5,
             fontface = "bold"
         )+
         geom_text(
             aes(
                 x = config_globals()[["start_tr_de"]],
-                label = "German FPD",
+                label = "German FTD",
                 y = 1.5
             ),
             angle = 90,
             vjust = -1,
-            size = 3,
+            size = 5,
             fontface = "bold"
         )+
         scale_color_manual(
@@ -231,10 +231,10 @@ plotting_price_trends <- function(fuel_prices = NA) {
         theme_classic()+
         theme(
             legend.position = "bottom",
-            axis.title.y = element_text(size = 14, vjust = 2),
-            axis.text.y = element_text(size = 12),
-            axis.text.x = element_text(size = 10, angle = 45, hjust = 1),
-            legend.text = element_text(size = 12),
+            axis.title.y = element_text(size = 15, vjust = 2),
+            axis.text.y = element_text(size = 13),
+            axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+            legend.text = element_text(size = 14),
         )
 
     suppressMessages(ggsave(
