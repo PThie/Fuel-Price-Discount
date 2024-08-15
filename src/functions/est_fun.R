@@ -2,7 +2,8 @@ est_fun <- function(
     moddata,
     depvar = c("diesel", "e10"),
     fixef = c("time", "region", "time_region", "none"),
-    event = FALSE
+    event = FALSE,
+    twoway_clustering = FALSE
 ) {
     # Time FE
     if(fixef == "time"){
@@ -49,12 +50,21 @@ est_fun <- function(
         )
     }
 
-    # estimation model
-    est_mod <- fixest::feols(
-        fml = fm,
-        data = moddata,
-        cluster = "station_id"
-    )
+    # clustering along two dimensions
+    if (twoway_clustering == FALSE) {
+        # estimation model
+        est_mod <- fixest::feols(
+            fml = fm,
+            data = moddata,
+            cluster = "station_id"
+        )
+    } else {
+        est_mod <- fixest::feols(
+            fml = fm,
+            data = moddata,
+            cluster = c("station_id", "date")
+        )
+    }
 
     # return model
     return(est_mod)
