@@ -495,7 +495,7 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
-        testing_states_baseline,
+        testing_north_states_baseline,
         estimating_baseline_effects(
             price_data = north_states_prices,
             suffix_export = "north",
@@ -503,10 +503,25 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
-        testing_states_event_study,
+        testing_north_states_event_study,
         estimating_baseline_event_study(
             price_data = north_states_prices,
             suffix_export = "north"
+        )
+    ),
+    #--------------------------------------------------
+    # Testing the effect for each state separately
+    tar_fst(
+        state_prices,
+        making_state_prices(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations
+        )
+    ),
+    tar_target(
+        testing_states_event_study,
+        estimating_states_event_study(
+            price_data = state_prices
         )
     ),
     #--------------------------------------------------
