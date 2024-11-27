@@ -222,6 +222,14 @@ targets_preparation <- rlang::list2(
             french_fuel_prices = french_fuel_prices
         )
     ),
+    # connecting French stations and regions
+    tar_qs(
+        french_stations_regions,
+        connecting_french_stations_regions(
+            french_stations = french_stations,
+            french_regions = french_regions
+        )
+    ),
     #--------------------------------------------------
     # reading and cleaning German stations
     tar_file(
