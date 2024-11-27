@@ -148,6 +148,18 @@ targets_geo <- rlang::list2(
         sf::st_read(!!.x, quiet = TRUE) |>
             dplyr::select(AGS, geometry) |>
             sf::st_transform(config_globals()[["utmcrs"]])
+    ),
+    #--------------------------------------------------
+    # geographical information for French regions
+    tar_file_read(
+        french_regions,
+        file.path(
+            config_paths()[["data_path"]],
+            "french_borders",
+            "regions",
+            "regions.shp"
+        ),
+        reading_french_regions(!!.x)
     )
 )
 
