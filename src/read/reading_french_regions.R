@@ -22,7 +22,7 @@ reading_french_regions <- function(
     # clean regions
 
     regions <- regions |>
-        dplyr::select(running_id = ID_1, region_name = NAME_1) |>
+        dplyr::select(running_id_region = ID_1, region_name = NAME_1) |>
         dplyr:::mutate(
             region_name = stringi::stri_trans_general(
                 region_name,
