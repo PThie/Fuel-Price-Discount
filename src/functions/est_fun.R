@@ -3,7 +3,8 @@ est_fun <- function(
     depvar = c("diesel", "e10"),
     fixef = c("time", "region", "time_region", "none"),
     event = FALSE,
-    twoway_clustering = FALSE
+    twoway_clustering = FALSE,
+    temperature = FALSE
 ) {
     # Time FE
     if(fixef == "time"){
@@ -63,6 +64,19 @@ est_fun <- function(
             fml = fm,
             data = moddata,
             cluster = c("station_id", "date")
+        )
+    }
+
+    # for estimating the impact of temperature
+    if (temperature == TRUE) {
+        fm <- formula(
+            paste(
+                depvar,
+                "~",
+                paste("temperature +"),
+                paste("relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
+                paste("| as.factor(date) + station_id")
+            )
         )
     }
 
