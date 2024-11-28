@@ -1,5 +1,7 @@
 connecting_temperature_stations <- function(
     german_stations = NA,
+    french_stations = NA,
+    french_regions = NA,
     temperature_data = NA
 ) {
     #' @title Connecting temperature data and stations
@@ -8,6 +10,8 @@ connecting_temperature_stations <- function(
     #' information.
     #' 
     #' @param german_stations German stations
+    #' @param french_stations French stations
+    #' @param french_regions French regions
     #' @param temperature_data Temperature data
     #' 
     #' @return Dataframe with connected temperature data and stations
@@ -15,7 +19,6 @@ connecting_temperature_stations <- function(
 
     #--------------------------------------------------
     # combine German stations and temperature data
-    # NOTE: temperature data for France is already connected with stations
 
     german_stations_temp <- merge(
         german_stations |> sf::st_drop_geometry(),
@@ -31,15 +34,36 @@ connecting_temperature_stations <- function(
         )
 
     #--------------------------------------------------
-    # clean French temperature station data
+    # combine French stations and temperature data
 
-    french_stations_temp <- temperature_data[["france"]] |>
-        dplyr::select(
-            -c("region_name")
+    # add regional information to temperature data
+    french_temp <- merge(
+            temperature_data[["france"]],
+            french_regions |> sf::st_drop_geometry(),
+            by = "running_id_region",
+            all.x = TRUE
         ) |>
-        dplyr::rename(
-            station_id = running_id_region
-        )
+        dplyr::select(-dplyr::contains("region_name"))
+
+    # combine French stations and regions
+    french_stations_region <- sf::st_join(
+        french_stations,
+        french_regions |>
+            sf::st_transform(crs = sf::st_crs(french_stations)),
+        left = TRUE,
+        largest = TRUE
+    ) |>
+    sf::st_drop_geometry() |>
+    dplyr::select(-region_name)
+
+    # combine French stations and temperature data
+    french_stations_temp <- merge(
+        french_stations_region,
+        french_temp,
+        by = "running_id_region",
+        all.x = TRUE
+    ) |>
+    dplyr::select(-c("running_id_region", "country"))
 
     #--------------------------------------------------
     # combine both
