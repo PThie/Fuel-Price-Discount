@@ -128,7 +128,17 @@ targets_geo <- rlang::list2(
         german_municipalities,
         german_municipality_file,
         sf::st_read(!!.x, quiet = TRUE) |>
-            dplyr::select(AGS = AGS_0, geometry) |>
+            dplyr::select(
+                AGS = AGS_0,
+                munic = GEN,
+                geometry
+            ) |>
+            dplyr::mutate(
+                munic = stringi::stri_trans_general(
+                    munic,
+                    "de-ASCII; Latin-ASCII"
+                )   
+            ) |>
             sf::st_transform(config_globals()[["utmcrs"]])
     ),
     #--------------------------------------------------
@@ -595,6 +605,12 @@ targets_analysis <- rlang::list2(
             price_data = fuel_prices_morning,
             suffix_export = "morning_rush"
         )
+    ),
+    #--------------------------------------------------
+    # Testing temperature impact
+    tar_target(
+        temperature_data,
+        reading_temperature_data()
     )
 )
 
