@@ -616,6 +616,8 @@ targets_analysis <- rlang::list2(
         station_temperature_data,
         connecting_temperature_stations(
             german_stations = german_stations,
+            french_stations = french_stations,
+            french_regions = french_regions,
             temperature_data = temperature_data
         )
     ),
