@@ -10,7 +10,7 @@ estimating_baseline_event_study <- function(
     #' @param price_data Fuel price data April to August 2022
     #' @param suffix_export Suffix for export files
     #' 
-    #' @return Returns estimation results
+    #' @return List with estimation results
     #' @author Patrick Thiel
     
     #----------------------------------------------
@@ -253,4 +253,9 @@ estimating_baseline_event_study <- function(
             height = 5
         )
     }
+
+    #--------------------------------------------------
+    # return
+
+    return(mod_list_event)
 }
