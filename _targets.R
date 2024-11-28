@@ -611,6 +611,20 @@ targets_analysis <- rlang::list2(
     tar_target(
         temperature_data,
         reading_temperature_data()
+    ),
+    tar_fst(
+        station_temperature_data,
+        connecting_temperature_stations(
+            german_stations = german_stations,
+            temperature_data = temperature_data
+        )
+    ),
+    tar_target(
+        testing_temperature_impact,
+        estimating_temperature_impact(
+            fuel_prices = fuel_prices_april_august,
+            station_temperature_data = station_temperature_data
+        )
     )
 )
 
