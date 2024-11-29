@@ -51,6 +51,19 @@ est_fun <- function(
         )
     }
 
+    # for estimating the impact of temperature
+    if (temperature == TRUE) {
+        fm <- formula(
+            paste(
+                depvar,
+                "~",
+                paste("temperature +"),
+                paste("relevel(as.factor(time_to_treatment), \"-1\") * relevel(as.factor(treat_region_de), \"control\")"),
+                paste("| as.factor(date) + station_id")
+            )
+        )
+    }
+
     # clustering along two dimensions
     if (twoway_clustering == FALSE) {
         # estimation model
@@ -67,18 +80,6 @@ est_fun <- function(
         )
     }
 
-    # for estimating the impact of temperature
-    if (temperature == TRUE) {
-        fm <- formula(
-            paste(
-                depvar,
-                "~",
-                paste("temperature +"),
-                paste("relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
-                paste("| as.factor(date) + station_id")
-            )
-        )
-    }
 
     # return model
     return(est_mod)
