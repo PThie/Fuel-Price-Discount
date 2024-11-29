@@ -1,6 +1,7 @@
 estimating_baseline_event_study <- function(
     price_data = NA,
-    suffix_export = NA
+    suffix_export = NA,
+    temperature = FALSE
 ) {
     #' @title Estimating an event study for the baseline
     #' 
@@ -9,6 +10,7 @@ estimating_baseline_event_study <- function(
     #' 
     #' @param price_data Fuel price data April to August 2022
     #' @param suffix_export Suffix for export files
+    #' @param temperature Logical, whether to include temperature as control
     #' 
     #' @return List with estimation results
     #' @author Patrick Thiel
@@ -43,7 +45,8 @@ estimating_baseline_event_study <- function(
             moddata = avg_prices_event,
             depvar = dep_case,
             fixef = "time_region",
-            event = TRUE
+            event = TRUE,
+            temperature = temperature
         )
         mod_list_event[[dep_case]] <- mod
     })
