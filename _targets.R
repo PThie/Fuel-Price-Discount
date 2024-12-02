@@ -554,6 +554,19 @@ targets_analysis <- rlang::list2(
             price_data = state_prices
         )
     ),
+    # testing robust trends
+    tar_target(
+        testing_robust_trends_dayspecific_state,
+        testing_robust_trends_dayspecific_states(
+            price_data = state_prices
+        )
+    ),
+    tar_target(
+        honest_did_days_plots_states,
+        plotting_robust_trends_dayspecific_states(
+            honest_did_days = testing_robust_trends_dayspecific_state
+        )
+    ),
     #--------------------------------------------------
     # Baseline estimation with twoway clustering
     tar_target(
