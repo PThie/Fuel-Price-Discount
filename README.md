@@ -15,7 +15,7 @@ Keywords: Competition, demand elasticity, fuel tax discount, gasoline market
 JEL Classifications: L13, L81, D43
 
 ## Current Publication and Citation
-Frondel, Manuel and Thiel, Patrick and Vance, Colin, Heterogeneous Pass-through over Space and Time: The Case of Germany’s Fuel Tax Discount (March 28, 2024). USAEE Working Paper No. 24-619, Available at SSRN: https://ssrn.com/abstract=4785571 or http://dx.doi.org/10.2139/ssrn.4785571
+Frondel, Manuel and Thiel, Patrick and Vance, Colin, Heterogeneous Pass-through over Space and Time: The Case of Germany’s Fuel Tax Discount. Ruhr Economic Papers, 1087. http://dx.doi.org/10.4419/96973262.
 
 ## Download latest version here:
-https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4785571
+[Latest version (PDF)](https://www.rwi-essen.de/fileadmin/user_upload/RWI/Publikationen/Ruhr_Economic_Papers/REP_24_1087.pdf)
