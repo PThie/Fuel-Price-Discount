@@ -488,6 +488,12 @@ targets_analysis <- rlang::list2(
     ),
     #--------------------------------------------------
     # Testing the parallel trend assumption using the HonestDiD approach
+    tar_fst(
+        weekly_prices,
+        making_weekly_prices(
+            price_data = fuel_prices_april_august
+        )
+    ),
     tar_target(
         honest_did,
         testing_robust_trends(
@@ -565,6 +571,40 @@ targets_analysis <- rlang::list2(
         honest_did_days_plots_states,
         plotting_robust_trends_dayspecific_states(
             honest_did_days = testing_robust_trends_dayspecific_state
+        )
+    ),
+    #--------------------------------------------------
+    # Placebo analysis
+    tar_target(
+        placebo_prices,
+        subsetting_placebo_prices(
+            price_data = fuel_prices
+        )
+    ),
+    tar_target(
+        baseline_effects_placebo,
+        estimating_baseline_effects_placebo(
+            price_data = placebo_prices
+        )
+    ),
+    tar_target(
+        baseline_event_study_placebo,
+        estimating_baseline_event_study_placebo(
+            price_data = placebo_prices
+        )
+    ),
+    tar_target(
+        event_study_placebo_plots,
+        plotting_event_study_placebo(
+            result_list = baseline_event_study_placebo,
+            suffix_export = "placebo"
+        )
+    ),
+    tar_target(
+        event_study_placebo_combined_plots,
+        plotting_event_study_combined(
+            result_list = baseline_event_study,
+            result_list_placebo = baseline_event_study_placebo
         )
     ),
     #--------------------------------------------------
