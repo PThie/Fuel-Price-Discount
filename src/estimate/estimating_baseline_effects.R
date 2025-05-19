@@ -327,4 +327,9 @@ estimating_baseline_effects <- function(
         ),
         rowNames = FALSE
     )
+
+    #--------------------------------------------------
+    # return
+
+    return(NULL)
 }
