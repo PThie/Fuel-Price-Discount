@@ -1,7 +1,8 @@
 estimating_regional_effect <- function(
     fuel_prices_april_august = NA,
     german_stations = NA,
-    german_districts
+    german_districts = NA,
+    suffix_export = NA
 ) {
     #' @title Regional effect on district-level
     #' 
@@ -11,6 +12,7 @@ estimating_regional_effect <- function(
     #' @param fuel_prices_april_august Fuel price data April to August 2022
     #' @param german_stations German station information
     #' @param german_districts German district information
+    #' @param suffix_export Suffix for export files
     #' 
     #' @return Returns data frame with regional effects and maps
     #' @author Patrick Thiel
@@ -88,7 +90,13 @@ estimating_regional_effect <- function(
             file = file.path(
                 config_paths()[["output_path"]],
                 "estimation",
-                paste0("did_est_regional_", var, ".tex")
+                paste0(
+                    "did_est_regional_",
+                    var,
+                    "_",
+                    suffix_export,
+                    ".tex"
+                )
             ),
             digits = "r3", cluster = "station_id",
             replace = TRUE,
@@ -159,7 +167,11 @@ estimating_regional_effect <- function(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_regional.xlsx"
+            paste0(
+                "did_est_regional_",
+                suffix_export,
+                ".xlsx"
+            )
         ),
         rowNames = FALSE
     )
@@ -179,7 +191,11 @@ estimating_regional_effect <- function(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "did_est_regional_ranges.xlsx"
+            paste0(
+                "did_est_regional_ranges_",
+                suffix_export,
+                ".xlsx"
+            )
         ),
         rowNames = FALSE
     )
@@ -208,9 +224,19 @@ estimating_regional_effect <- function(
         if (var == "diesel") {
             br <- seq(50, 140, 10)
             lim <- c(50, 140)
+
+            if (suffix_export == "twoweeks") {
+                br <- seq(100, 160, 10)
+                lim <- c(100, 160)
+            }
         } else {
             br <- seq(50, 110, 10)
             lim <- c(50, 110)
+
+            if (suffix_export == "twoweeks") {
+                br <- seq(80, 130, 10)
+                lim <- c(80, 130)
+            }
         }
         # generate map
         map <- ggplot()+
@@ -235,7 +261,14 @@ estimating_regional_effect <- function(
             )
 
         # export
-        filename <- paste0("regional_price_effect_", var, ".png")
+        filename <- paste0(
+            "regional_price_effect_",
+            var,
+            "_",
+            suffix_export,
+            ".png"
+        )
+
         suppressMessages(ggsave(
             plot = map,
             file.path(
