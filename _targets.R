@@ -224,6 +224,13 @@ targets_preparation <- rlang::list2(
             fuel_prices = fuel_prices
         )
     ),
+    # Preparing data for the analysis of the French FTD
+    tar_fst(
+        french_fuel_prices_prep,
+        subsetting_french_fuel_prices(
+            price_data = fuel_prices
+        )
+    ),
     #--------------------------------------------------
     # extract geo information of French stations
     tar_qs(
