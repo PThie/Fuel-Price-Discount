@@ -12,6 +12,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
     # define dates as globals
 
     beginning_2022 <- as.Date("2022-01-01", format = "%Y-%m-%d")
+    end_2022 <- as.Date("2022-12-31", format = "%Y-%m-%d")
     april_2022 <- as.Date("2022-04-01", format = "%Y-%m-%d")
     september_2022 <- as.Date("2022-09-01", format = "%Y-%m-%d")
     end_october_2022 <- as.Date("2022-10-31", format = "%Y-%m-%d")
@@ -331,7 +332,7 @@ plotting_price_trends <- function(fuel_prices = NA) {
 
     # define different data sets
     data_year_2022 <- avg_fuel_prices |>
-        dplyr::filter(date >= beginning_2022)
+        dplyr::filter(date >= beginning_2022 & date <= end_2022)
     
     data_april_sep  <- avg_fuel_prices |>
         dplyr::filter(
