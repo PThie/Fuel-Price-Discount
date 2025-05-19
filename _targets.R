@@ -98,7 +98,7 @@ targets_geo <- rlang::list2(
         file.path(
             config_paths()[["gebiete_path"]],
             "Zuordnung",
-            "_Gemeinde",
+            "Raster_Gemeinde",
             "2020_Grids_Municipality_Exact_unambiguous.csv"
         )
     ),
@@ -383,7 +383,18 @@ targets_analysis <- rlang::list2(
         estimating_regional_effect(
             fuel_prices_april_august = fuel_prices_april_august,
             german_stations = german_stations,
-            german_districts = german_districts
+            german_districts = german_districts,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
+        regional_effect_district_twoweeks,
+        estimating_regional_effect(
+            fuel_prices_april_august = fuel_prices_april_august |>
+                dplyr::filter(date <= "2022-06-14"),
+            german_stations = german_stations,
+            german_districts = german_districts,
+            suffix_export = "twoweeks"
         )
     ),
     #--------------------------------------------------
