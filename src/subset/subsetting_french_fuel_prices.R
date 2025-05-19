@@ -22,6 +22,7 @@ subsetting_french_fuel_prices <- function(
     # April 2022)
 
     price_data <- price_data |>
+        dplyr::filter(date >= "2022-02-01" & date <= "2022-05-31") |>
         dplyr::mutate(
             treat_region_fr = dplyr::case_when(
                 country == "FR" ~ 1,
