@@ -698,6 +698,14 @@ targets_analysis <- rlang::list2(
             fuel_prices = fuel_prices_april_august,
             station_temperature_data = station_temperature_data
         )
+    ),
+    #--------------------------------------------------
+    # Testing the French FTD
+    tar_target(
+        french_ftd_trends_plots,
+        plotting_french_ftd(
+            fuel_prices = french_fuel_prices_prep
+        )
     )
 )
 
