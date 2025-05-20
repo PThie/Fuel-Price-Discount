@@ -1,6 +1,7 @@
 est_fun_french_ftd <- function(
     moddata = NA,
     depvar = c("diesel", "e10"),
+    twoway_clustering = FALSE,
     event = FALSE
 ) {
     #' @title Estimation function for French fuel prices
@@ -11,6 +12,8 @@ est_fun_french_ftd <- function(
     #' @param moddata Data frame with the prepared fuel price data
     #' @param depvar Character, the dependent variable to be estimated. Either
     #' "diesel" or "e10".
+    #' @param twoway_clustering Logical, if TRUE, the function estimates the
+    #' standard errors clustered along two dimensions (station_id and date).
     #' @param event Logical, if TRUE, the function estimates an event study
     #'  
     #' @return Returns a fixest object with the estimated coefficients
@@ -42,11 +45,21 @@ est_fun_french_ftd <- function(
     #--------------------------------------------------
     # actual estimation
 
-    est_mod <- fixest::feols(
-        fml = fm,
-        data = moddata,
-        cluster = c("station_id", "date")
-    )
+    # clustering along two dimensions
+    if (twoway_clustering == FALSE) {
+        # estimation model
+        est_mod <- fixest::feols(
+            fml = fm,
+            data = moddata,
+            cluster = "station_id"
+        )
+    } else {
+        est_mod <- fixest::feols(
+            fml = fm,
+            data = moddata,
+            cluster = c("station_id", "date")
+        )
+    }
 
     #--------------------------------------------------
     # return

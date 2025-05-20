@@ -25,6 +25,7 @@ estimating_french_ftd <- function(
         mod <- est_fun_french_ftd(
             moddata = price_data,
             depvar = dep_case,
+            twoway_clustering = TRUE,
             event = FALSE
         )
         mod_list_gastype[[dep_case]] <- mod
