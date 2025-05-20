@@ -706,6 +706,12 @@ targets_analysis <- rlang::list2(
         plotting_french_ftd(
             fuel_prices = french_fuel_prices_prep
         )
+    ),
+    tar_target(
+        french_ftd_baseline,
+        estimating_french_ftd(
+            price_data = french_fuel_prices_prep
+        )
     )
 )
 
