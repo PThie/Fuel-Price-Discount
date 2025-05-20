@@ -712,6 +712,12 @@ targets_analysis <- rlang::list2(
         estimating_french_ftd(
             price_data = french_fuel_prices_prep
         )
+    ),
+    tar_target(
+        french_ftd_event_study,
+        estimating_french_ftd_event_study(
+            price_data = french_fuel_prices_prep
+        )
     )
 )
 
