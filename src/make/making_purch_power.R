@@ -1,19 +1,20 @@
 making_purch_power <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA,
     microm_data_cleaned = NA,
-    german_municipalities = NA
+    german_municipalities = NA,
+    suffix_export = NA
 ) {
     #' @title Analysis purchasing power
     #' 
     #' @desciption This function analysis the passthrough given different
     #' purchasing power groups (i.e. income groups).
     #' 
-    #' @param fuel_prices_april_august Fuel price data for Germany and France
-    #' April to August 2022
+    #' @param price_data Fuel price data for Germany and France
     #' @param german_stations German station data
     #' @param microm_data_cleaned Cleaned microm data
     #' @param german_municipalities German spatial municipality data
+    #' @param suffix_export Suffix for export file names
     #' 
     #' @return NULL, estimation outputs
     #' @author Patrick Thiel
@@ -250,7 +251,7 @@ making_purch_power <- function(
     # merge to station prices
 
     avg_prices_pp <- merge(
-        fuel_prices_april_august,
+        price_data,
         german_stations_munic,
         by = "station_id",
         all.x = TRUE
@@ -355,7 +356,11 @@ making_purch_power <- function(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "hetero_purch_power_munic.xlsx"
+            paste0(
+                "hetero_purch_power_munic_",
+                suffix_export,
+                ".xlsx"
+            )
         )
     )
 
@@ -453,7 +458,13 @@ making_purch_power <- function(
 
     # export
     fln <- "munic"
-    filename <- paste0("hetero_results_purch_power_", fln, ".png")
+    filename <- paste0(
+        "hetero_results_purch_power_", 
+        fln,
+        "_",
+        suffix_export,
+        ".png"
+    )
     suppressMessages(ggsave(
         plot = hetero_plot,
         file.path(
@@ -538,7 +549,13 @@ making_purch_power <- function(
             file = file.path(
                 config_paths()[["output_path"]],
                 "estimation",
-                paste0("purch_power", result, ".tex")
+                paste0(
+                    "purch_power",
+                    result,
+                    "_",
+                    suffix_export,
+                    ".tex"
+                )
             ),
             digits = "r3", cluster = "station_id",
             dict = config_globals()[["coefnames"]],
@@ -593,16 +610,27 @@ making_purch_power <- function(
         )
 
         # add months
-        final_prep <- final_prep |>
-            dplyr::mutate(
-                months = dplyr::case_when(
-                    time >= -61 & time <= -32 ~ 4,
-                    time >= -31 & time <= -1 ~ 5,
-                    time >= 0 & time <= 29 ~ 6,
-                    time >= 30 & time <= 60 ~ 7,
-                    time >= 61 & time <= 91 ~ 8
+        if (suffix_export == "twoweeks") {
+            final_prep <- final_prep |>
+                dplyr::mutate(
+                    months = dplyr::case_when(
+                        time >= -61 & time <= -32 ~ 4,
+                        time >= -31 & time <= -1 ~ 5,
+                        time >= 0 & time <= 29 ~ 6
+                    )
                 )
-            )
+        } else {
+            final_prep <- final_prep |>
+                dplyr::mutate(
+                    months = dplyr::case_when(
+                        time >= -61 & time <= -32 ~ 4,
+                        time >= -31 & time <= -1 ~ 5,
+                        time >= 0 & time <= 29 ~ 6,
+                        time >= 30 & time <= 60 ~ 7,
+                        time >= 61 & time <= 91 ~ 8
+                    )
+                )
+        }
 
         # return
         return(final_prep)
@@ -651,9 +679,6 @@ making_purch_power <- function(
                 linetype = "solid",
                 col = "grey80"
             )+
-            scale_x_discrete(
-                breaks = seq(-60, 90, 30)
-            )+
             scale_y_continuous(
                 breaks = round(seq(-0.3, 0.1, 0.1), digits = 2)
             )+
@@ -670,34 +695,68 @@ making_purch_power <- function(
                 legend.key.size = unit(1.3, "cm"),
                 legend.title = element_text(size = 22),
                 legend.text = element_text(size = 22)
-            )+
-            # extend plotting space
-            coord_cartesian(xlim = c(0, 154))
+            )
+
+        if (suffix_export == "twoweeks") {
+            rangeplot <- baseplot+
+                geom_pointrange(
+                    data = high_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 13, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "high", shape = "high"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                geom_pointrange(
+                    data = low_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 13, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "low", shape = "low"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                scale_x_discrete(
+                    breaks = seq(-60, 15, 15)
+                )+
+                # extend plotting space
+                coord_cartesian(xlim = c(0, 80))
+        } else {
+            rangeplot <- baseplot+
+                geom_pointrange(
+                    data = high_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 91, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "high", shape = "high"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                geom_pointrange(
+                    data = low_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 91, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "low", shape = "low"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                scale_x_discrete(
+                    breaks = seq(-60, 90, 30)
+                )+
+                # extend plotting space
+                coord_cartesian(xlim = c(0, 154))
+        }
 
         #----------------------------------------------
-        # add coefficient estimates to plot
+        # add colors to plot
 
-        rangeplot <- baseplot+
-            geom_pointrange(
-                data = high_density_data,
-                mapping = aes(
-                    x = factor(time, levels = seq(-61, 91, 1)),
-                    y = coefficient, ymin = lower, ymax = upper,
-                    col = "high", shape = "high"
-                ),
-                linewidth = 1,
-                size = 0.5
-            )+
-            geom_pointrange(
-                data = low_density_data,
-                mapping = aes(
-                    x = factor(time, levels = seq(-61, 91, 1)),
-                    y = coefficient, ymin = lower, ymax = upper,
-                    col = "low", shape = "low"
-                ),
-                linewidth = 1,
-                size = 0.5
-            )+
+        colplot <- rangeplot+
             scale_color_manual(
                 values = c(
                     "low" = config_globals()[["java_five_colors"]][1],
@@ -724,7 +783,7 @@ making_purch_power <- function(
         #----------------------------------------------
         # add horizontal line for FTD
         if (gastype == "diesel") {
-            coefplot <- rangeplot+
+            coefplot <- colplot+
                 geom_hline(
                     yintercept = -0.1671,
                     linewidth = 0.6,
@@ -739,7 +798,7 @@ making_purch_power <- function(
                     size = 7.5
                 )
         } else {
-            coefplot <- rangeplot+
+            coefplot <- colplot+
                 geom_hline(
                     yintercept = -0.3516,
                     linewidth = 0.6,
@@ -756,7 +815,13 @@ making_purch_power <- function(
         }
 
         # export
-        filename <- paste0("purch_power_", gastype, "_high_low.png")
+        filename <- paste0(
+            "purch_power_",
+            gastype,
+            "_",
+            suffix_export,
+            "_high_low.png"
+        )
         suppressMessages(ggsave(
             plot = coefplot,
             file.path(
