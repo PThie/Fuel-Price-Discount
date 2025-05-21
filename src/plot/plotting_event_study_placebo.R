@@ -228,7 +228,7 @@ plotting_event_study_placebo <- function(
                 ),
                 dpi = 800,
                 width = 8,
-                height = 5
+                height = 7
             )
         }
     }

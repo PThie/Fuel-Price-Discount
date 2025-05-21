@@ -230,7 +230,7 @@ estimating_french_ftd_event_study <- function(
             ),
             dpi = 800,
             width = 8,
-            height = 5
+            height = 7
         )
     }
 

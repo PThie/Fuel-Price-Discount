@@ -222,7 +222,7 @@ plotting_event_study_combined <- function(
                 ),
                 dpi = config_globals()[["owndpi"]],
                 width = 8,
-                height = 5
+                height = 7
             )
         }
     }
