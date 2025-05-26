@@ -3,7 +3,8 @@ making_station_density <- function(
     german_stations = NA,
     microm_data_cleaned = NA,
     german_municipalities = NA,
-    german_districts = NA
+    german_districts = NA,
+    suffix_export = NA
 ) {
     #' @title Heterogeneity based on car density
     #' 
@@ -15,6 +16,7 @@ making_station_density <- function(
     #' @param microm_data_cleaned Cleaned microm data (RWI-GEO-GRID data)
     #' @param german_municipalities German municipalities
     #' @param german_districts German districts
+    #' @param suffix_export Suffix for export files
     #' 
     #' @return NULL, estimation outputs
     #' @author Patrick Thiel
@@ -273,7 +275,11 @@ making_station_density <- function(
         file.path(
             config_paths()[["output_path"]],
             "estimation",
-            "hetero_station_density.xlsx"
+            paste0(
+                "hetero_station_density_",
+                suffix_export,
+                ".xlsx"
+            )
         )
     )
 
@@ -368,7 +374,11 @@ making_station_density <- function(
         file.path(
             config_paths()[["output_path"]],
             "graphs",
-            "hetero_results_station_density.png"
+            paste0(
+                "hetero_results_station_density_",
+                suffix_export,
+                ".png"
+            )
         ),
         dpi = config_globals()[["owndpi"]]
     ))
@@ -447,7 +457,13 @@ making_station_density <- function(
             file = file.path(
                 config_paths()[["output_path"]],
                 "estimation",
-                paste0("station_density_", result, ".tex")
+                paste0(
+                    "station_density_",
+                    result,
+                    "_",
+                    suffix_export,
+                    ".tex"
+                )
             ),
             digits = "r3", cluster = "station_id",
             dict = config_globals()[["coefnames"]],
@@ -508,19 +524,36 @@ making_station_density <- function(
         )
 
         # add months
-        final_prep <- final_prep |>
-            dplyr::mutate(
-                months = dplyr::case_when(
-                    time >= -61 & time <= -32 ~ 4,
-                    time >= -31 & time <= -1 ~ 5,
-                    time >= 0 & time <= 29 ~ 6,
-                    time >= 30 & time <= 60 ~ 7,
-                    time >= 61 & time <= 91 ~ 8
+        if (suffix_export == "twoweeks") {
+            final_prep <- final_prep |>
+                dplyr::mutate(
+                    months = dplyr::case_when(
+                        time >= -61 & time <= -32 ~ 4,
+                        time >= -31 & time <= -1 ~ 5,
+                        time >= 0 & time <= 29 ~ 6
+                    )
                 )
-            )
+        } else {
+            final_prep <- final_prep |>
+                dplyr::mutate(
+                    months = dplyr::case_when(
+                        time >= -61 & time <= -32 ~ 4,
+                        time >= -31 & time <= -1 ~ 5,
+                        time >= 0 & time <= 29 ~ 6,
+                        time >= 30 & time <= 60 ~ 7,
+                        time >= 61 & time <= 91 ~ 8
+                    )
+                )
+        }
 
         # export table
-        filename <- paste0("station_density_", result, ".xlsx")
+        filename <- paste0(
+            "station_density_",
+            result,
+            "_",
+            suffix_export,
+            ".xlsx"
+        )
         openxlsx::write.xlsx(
             final_prep,
             file.path(
@@ -579,9 +612,6 @@ making_station_density <- function(
                 linetype = "solid",
                 col = "grey80"
             )+
-            scale_x_discrete(
-                breaks = seq(-60, 90, 30)
-            )+
             scale_y_continuous(
                 breaks = round(seq(-0.3, 0.1, 0.1), digits = 2)
             )+
@@ -598,34 +628,71 @@ making_station_density <- function(
                 legend.key.size = unit(1.3, "cm"),
                 legend.title = element_text(size = 22),
                 legend.text = element_text(size = 22)
-            )+
-            # extend plotting space
-            coord_cartesian(xlim = c(0, 154))
+            )
 
         #----------------------------------------------
         # add coefficient estimates to plot
 
-        rangeplot <- baseplot+
-            geom_pointrange(
-                data = high_density_data,
-                mapping = aes(
-                    x = factor(time, levels = seq(-61, 91, 1)),
-                    y = coefficient, ymin = lower, ymax = upper,
-                    col = "high", shape = "high"
-                ),
-                linewidth = 1,
-                size = 0.5
-            )+
-            geom_pointrange(
-                data = low_density_data,
-                mapping = aes(
-                    x = factor(time, levels = seq(-61, 91, 1)),
-                    y = coefficient, ymin = lower, ymax = upper,
-                    col = "low", shape = "low"
-                ),
-                linewidth = 1,
-                size = 0.5
-            )+
+        if (suffix_export == "twoweeks") {
+            rangeplot <- baseplot+
+                geom_pointrange(
+                    data = high_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 13, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "high", shape = "high"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                geom_pointrange(
+                    data = low_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 13, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "low", shape = "low"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                scale_x_discrete(
+                    breaks = seq(-60, 15, 15)
+                )+
+                # extend plotting space
+                coord_cartesian(xlim = c(0, 80))
+        } else {
+            rangeplot <- baseplot+
+                geom_pointrange(
+                    data = high_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 91, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "high", shape = "high"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                geom_pointrange(
+                    data = low_density_data,
+                    mapping = aes(
+                        x = factor(time, levels = seq(-61, 91, 1)),
+                        y = coefficient, ymin = lower, ymax = upper,
+                        col = "low", shape = "low"
+                    ),
+                    linewidth = 1,
+                    size = 0.5
+                )+
+                scale_x_discrete(
+                    breaks = seq(-60, 90, 30)
+                )+
+                # extend plotting space
+                coord_cartesian(xlim = c(0, 154))
+        }
+
+        #----------------------------------------------
+        # add colors to plot
+
+        colplot <- rangeplot+
             scale_color_manual(
                 values = c(
                     "low" = config_globals()[["java_five_colors"]][1],
@@ -652,7 +719,7 @@ making_station_density <- function(
         #----------------------------------------------
         # add horizontal line for FTD
         if (gastype == "diesel") {
-            coefplot <- rangeplot+
+            coefplot <- colplot+
                 geom_hline(
                     yintercept = -0.1671,
                     linewidth = 0.6,
@@ -667,7 +734,7 @@ making_station_density <- function(
                     size = 7.5
                 )
         } else {
-            coefplot <- rangeplot+
+            coefplot <- colplot+
                 geom_hline(
                     yintercept = -0.3516,
                     linewidth = 0.6,
@@ -684,7 +751,13 @@ making_station_density <- function(
         }
 
         # export
-        filename <- paste0("station_density_", gastype, "_high_low.png")
+        filename <- paste0(
+            "station_density_",
+            gastype,
+            "_",
+            suffix_export,
+            "_high_low.png"
+        )
         suppressMessages(ggsave(
             plot = coefplot,
             file.path(
