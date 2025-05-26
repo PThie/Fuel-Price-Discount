@@ -392,7 +392,20 @@ targets_analysis <- rlang::list2(
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,
-            german_districts = german_districts
+            german_districts = german_districts,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
+        station_density_effects_twoweeks,
+        making_station_density(
+            fuel_prices_april_august = fuel_prices_april_august |>
+                dplyr::filter(date <= "2022-06-14"),
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            german_municipalities = german_municipalities,
+            german_districts = german_districts,
+            suffix_export = "twoweeks"
         )
     ),
     #--------------------------------------------------
