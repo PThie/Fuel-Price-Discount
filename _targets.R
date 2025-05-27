@@ -397,6 +397,13 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
+        station_density_effects_plots,
+        plotting_station_density_effects(
+            effects = station_density_effects,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
         station_density_effects_twoweeks,
         making_station_density(
             fuel_prices_april_august = fuel_prices_april_august |>
@@ -405,6 +412,13 @@ targets_analysis <- rlang::list2(
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,
             german_districts = german_districts,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        station_density_effects_plots_twoweeks,
+        plotting_station_density_effects(
+            effects = station_density_effects_twoweeks,
             suffix_export = "twoweeks"
         )
     ),
@@ -614,6 +628,16 @@ targets_analysis <- rlang::list2(
         honest_did_days_plots_states,
         plotting_robust_trends_dayspecific_states(
             honest_did_days = testing_robust_trends_dayspecific_state
+        )
+    ),
+    tar_target(
+        testing_states_station_density,
+        estimating_states_station_density(
+            price_data = state_prices,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            german_municipalities = german_municipalities,
+            german_districts = german_districts
         )
     ),
     #--------------------------------------------------
