@@ -11,6 +11,10 @@ estimating_states_station_density <- function(
     #' effects for the different states.
     #' 
     #' @param price_data Fuel price data April to August 2022.
+    #' @param german_stations Data frame with German stations.
+    #' @param microm_data_cleaned Cleaned microm data.
+    #' @param german_municipalities Data frame with German municipalities.
+    #' @param german_districts Data frame with German districts.
     #' 
     #' @return NULL, direct export
     #' @author Patrick Thiel
