@@ -656,6 +656,14 @@ targets_analysis <- rlang::list2(
             german_districts = german_districts
         )
     ),
+    tar_target(
+        testing_states_station_density_event_study,
+        estimating_states_station_density_event_study(
+            price_data = state_prices,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned
+        )
+    ),
     #--------------------------------------------------
     # Placebo analysis
     tar_target(
