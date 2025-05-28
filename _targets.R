@@ -404,6 +404,15 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
+        station_density_effects_event_study,
+        estimating_station_density_event_study(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
         station_density_effects_twoweeks,
         making_station_density(
             fuel_prices_april_august = fuel_prices_april_august |>
