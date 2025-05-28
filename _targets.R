@@ -379,6 +379,15 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
+        purchasing_power_effects_event_study,
+        estimating_purch_power_event_study(
+            fuel_prices_april_august = fuel_prices_april_august,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
         purchasing_power_effects_twoweeks,
         making_purch_power(
             price_data = fuel_prices_april_august |>
@@ -393,6 +402,16 @@ targets_analysis <- rlang::list2(
         purchasing_power_effects_plots_twoweeks,
         plotting_purch_power_effects(
             effects = purchasing_power_effects_twoweeks,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        purchasing_power_effects_event_study_twoweeks,
+        estimating_purch_power_event_study(
+            fuel_prices_april_august = fuel_prices_april_august |>
+                dplyr::filter(date <= "2022-06-14"),
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
             suffix_export = "twoweeks"
         )
     ),
@@ -449,6 +468,23 @@ targets_analysis <- rlang::list2(
         station_density_effects_plots_twoweeks,
         plotting_station_density_effects(
             effects = station_density_effects_twoweeks,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        station_density_effects_event_study_twoweeks,
+        estimating_station_density_event_study(
+            fuel_prices_april_august = fuel_prices_april_august |>
+                dplyr::filter(date <= "2022-06-14"),
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        station_density_effects_event_study_plots_twoweeks,
+        plotting_station_density_effects_event_study(
+            effects = station_density_effects_event_study_twoweeks,
             suffix_export = "twoweeks"
         )
     ),
