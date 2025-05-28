@@ -372,6 +372,13 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
+        purchasing_power_effects_plots,
+        plotting_purch_power_effects(
+            effects = purchasing_power_effects,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
         purchasing_power_effects_twoweeks,
         making_purch_power(
             price_data = fuel_prices_april_august |>
@@ -379,6 +386,13 @@ targets_analysis <- rlang::list2(
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        purchasing_power_effects_plots_twoweeks,
+        plotting_purch_power_effects(
+            effects = purchasing_power_effects_twoweeks,
             suffix_export = "twoweeks"
         )
     ),
