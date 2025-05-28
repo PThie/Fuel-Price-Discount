@@ -16,7 +16,7 @@ making_purch_power <- function(
     #' @param german_municipalities German spatial municipality data
     #' @param suffix_export Suffix for export file names
     #' 
-    #' @return NULL, estimation outputs
+    #' @return Dataframe with estimation outputs
     #' @author Patrick Thiel
     
     #----------------------------------------------
@@ -289,34 +289,45 @@ making_purch_power <- function(
         moddata_short <- moddata |>
             dplyr::filter(!!var_aux == "0" | !!var_aux == pp_cat)
 
-        # define formula
-        fm <- formula(
-            paste(
-                depvar, "~",
-                paste("+ relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
-                paste("| months + station_id")
+        # NOTE: only run model if category is present
+        if (as.character(pp_cat) %in% unique(moddata[[var_aux]])) {
+            # define formula
+            fm <- formula(
+                paste(
+                    depvar, "~",
+                    paste("+ relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
+                    paste("| months + station_id")
+                )
             )
-        )
 
-        # estimate
-        suppressMessages(est_mod <- fixest::feols(
-            fml = fm,
-            data = moddata_short,
-            cluster = "station_id",
-            notes = FALSE
-        ))
+            # estimate
+            suppressMessages(est_mod <- fixest::feols(
+                fml = fm,
+                data = moddata_short,
+                cluster = "station_id",
+                notes = FALSE
+            ))
+
+            # extract estimate
+            interaction <- "relevel(as.factor(treat_tankrabatt_de), \"control\")treated:relevel(as.factor(treat_region_de), \"control\")treated"
+            est <- as.numeric(
+                est_mod$coefficients[interaction]
+            )
+
+            # calculate confidence intervall
+            con <- confint(est_mod, level = 0.95)[interaction, ]
+
+            # define lower and upper confidence interval
+            lowci <- con[1, 1]
+            upci <- con[1, 2]
+        } else {
+            est <- NA
+            lowci <- NA
+            upci <- NA
+        }
 
         # define model run
         mod <- paste(depvar, pp_cat, sep = "_")
-
-        # extract estimate
-        interaction <- "relevel(as.factor(treat_tankrabatt_de), \"control\")treated:relevel(as.factor(treat_region_de), \"control\")treated"
-        est <- as.numeric(
-            est_mod$coefficients[interaction]
-        )
-
-        # calculate confidence intervall
-        con <- confint(est_mod, level = 0.95)[interaction, ]
 
         # put components together
         results_table <- data.frame(matrix(ncol = 4, nrow = 1))
@@ -325,8 +336,8 @@ making_purch_power <- function(
             dplyr::mutate(
                 mod_name = mod,
                 estimate = est,
-                lower_ci = con[1, 1],
-                upper_ci = con[1, 2]
+                lower_ci = lowci,
+                upper_ci = upci
             )
 
         # return output
@@ -388,462 +399,9 @@ making_purch_power <- function(
     }
 
     est_results_munic_df <- add_columns(est_results_munic_df)
-    
-    #----------------------------------------------
-    # plot results
-
-    hetero_plot <- ggplot(
-        data = est_results_munic_df,
-        mapping = aes(
-            x = factor(pp_cat),
-            y = estimate,
-            group = depvar_id,
-            shape = depvar_id
-        )
-    )+
-        geom_pointrange(
-            mapping = aes(ymin = lower_ci, ymax = upper_ci),
-            linewidth = 1, size = 0.5
-        )+
-        scale_y_continuous(
-            breaks = seq(-0.14, -0.36, -0.02)
-        )+
-        scale_shape_manual(
-            values = c(
-                "diesel" = 17, 
-                "e10" = 15
-            ),
-            name = "Fuel type", 
-            labels = c(
-                "diesel" = "Diesel",
-                "e10" = "Petrol (E10)"
-            )
-        )+
-        geom_hline(
-            yintercept = -0.17,
-            linewidth = 0.8,
-            linetype = "dashed"
-        )+
-        geom_text(
-            x = 9,
-            y = -0.18,
-            label = "Diesel FTD",
-            size = 6
-        )+
-        geom_hline(
-            yintercept = -0.35,
-            linewidth = 0.8,
-            linetype = "dashed"
-        )+
-        geom_text(
-            x = 9,
-            y = -0.34,
-            label = "Petrol FTD",
-            size = 6
-        )+
-        labs(
-            x = "Income category",
-            y = "Point estimates and 95% CI"
-        )+
-        theme_classic()+
-        theme(
-            legend.position = "bottom",
-            panel.border = element_rect(linewidth = 1, fill = NA),
-            axis.text = element_text(size = 15),
-            axis.title = element_text(size = 17),
-            legend.key.size = unit(1, "cm"),
-            legend.title = element_text(size = 18),
-            legend.text = element_text(size = 16)
-        )
-
-    # export
-    fln <- "munic"
-    filename <- paste0(
-        "hetero_results_purch_power_", 
-        fln,
-        "_",
-        suffix_export,
-        ".png"
-    )
-    suppressMessages(ggsave(
-        plot = hetero_plot,
-        file.path(
-            config_paths()[["output_path"]],
-            "graphs",
-            filename
-        ),
-        dpi = config_globals()[["owndpi"]]
-    ))
-
-    #----------------------------------------------
-    # event study analysis
-
-    # add time to treatment in days
-    avg_prices_event <- avg_prices_pp |>
-        mutate(
-            time_to_treatment = as.numeric(difftime(
-                as.Date(date, "%Y-%m-%d"),
-                config_globals()[["start_tr_de"]],
-                units = "days"
-            )),
-            # set French stations to never-treated (in terms of time)
-            time_to_treatment = dplyr::case_when(
-                treat_region_de == "control" ~ 999,
-                TRUE ~ time_to_treatment
-            )
-        )
-
-    # define estimation function
-    est_fun_event <- function(moddata, depvar = c("diesel", "e10"), pp_cat) {
-        var_aux <- rlang::sym("purch_power_pp_cat_munic")
-        moddata_short <- moddata |>
-            dplyr::filter(!!var_aux == "0" | !!var_aux == pp_cat)
-
-        # define formula
-        fm <- formula(
-            paste(
-                depvar, "~",
-                paste("relevel(as.factor(time_to_treatment), \"-1\") * relevel(as.factor(treat_region_de), \"control\")"),
-                paste("| as.factor(date) + station_id")
-            )
-        )
-        
-        # estimate
-        suppressMessages(est_mod <- fixest::feols(
-            fml = fm,
-            data = moddata_short,
-            cluster = "station_id",
-            notes = FALSE
-        ))
-
-        return(est_mod)
-    }
-
-    # define categories
-    cats <- c("1", "10")
-    
-    # list for storage
-    mod_list_event <- list()
-
-    # loop through options
-    for(var in vars) {
-        for(cat in cats) {
-            # list name
-            list_name <- paste(var, "pp_cat", cat, sep = "_")
-            # loop through options and store output
-            mod_list_event[[list_name]] <- est_fun_event(
-                moddata = avg_prices_event,
-                depvar = var,
-                pp_cat = cat
-            )
-        }
-    }
-
-    # get coefficient data
-    get_coefficients <- function(result) {
-        est_data <- mod_list_event[[result]]
-
-        # export raw results
-        fixest::esttex(
-            est_data,
-            file = file.path(
-                config_paths()[["output_path"]],
-                "estimation",
-                paste0(
-                    "purch_power",
-                    result,
-                    "_",
-                    suffix_export,
-                    ".tex"
-                )
-            ),
-            digits = "r3", cluster = "station_id",
-            dict = config_globals()[["coefnames"]],
-            replace = TRUE,
-            signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
-        )
-
-        # extract coefficients
-        coef <- as.data.frame(est_data$coefficients)
-        coef$var <- row.names(coef)
-        row.names(coef) <- seq(1, nrow(coef), 1)
-    
-        coef_prep <- coef |>
-            dplyr::rename(
-                coefficient = `est_data$coefficients`
-            ) |>
-            dplyr::mutate(
-                time = substr(var, start = 44, stop = 46)
-            )
-
-        # get confidence intervals
-        confidence <- confint(est_data, level = 0.95) |>
-            dplyr::rename(
-                lower = `2.5 %`,
-                upper = `97.5 %`
-            ) |>
-            as.data.frame()
-
-        confidence_prep <- confidence |>
-            dplyr::mutate(
-                var = row.names(confidence),
-                time = substr(var, start = 44, stop = 46)
-            )
-        
-        row.names(confidence_prep) <- seq(1, nrow(confidence_prep), 1)
-
-        # combine both
-        final_prep <- merge(
-            coef_prep |>
-                dplyr::select(time, coefficient),
-            confidence_prep |>
-                dplyr::select(time, lower, upper),
-            by = "time"
-        )
-
-        final_prep$time <- as.numeric(final_prep$time)
-
-        # add reference point
-        final_prep <- rbind(
-            final_prep,
-            as.data.frame(cbind(time = -1, coefficient = 0, lower = 0, upper = 0))
-        )
-
-        # add months
-        if (suffix_export == "twoweeks") {
-            final_prep <- final_prep |>
-                dplyr::mutate(
-                    months = dplyr::case_when(
-                        time >= -61 & time <= -32 ~ 4,
-                        time >= -31 & time <= -1 ~ 5,
-                        time >= 0 & time <= 29 ~ 6
-                    )
-                )
-        } else {
-            final_prep <- final_prep |>
-                dplyr::mutate(
-                    months = dplyr::case_when(
-                        time >= -61 & time <= -32 ~ 4,
-                        time >= -31 & time <= -1 ~ 5,
-                        time >= 0 & time <= 29 ~ 6,
-                        time >= 30 & time <= 60 ~ 7,
-                        time >= 61 & time <= 91 ~ 8
-                    )
-                )
-        }
-
-        # return
-        return(final_prep)
-    }
-
-    # store estimated coefficients
-    coef_event <- list()
-    for(nam in names(mod_list_event)) {
-        coef_event[[nam]] <- get_coefficients(result = nam)
-    }
-
-    # plotting function
-    plot_estimates <- function(gastype) {
-        #' @param gastype Fuel type (Diesel or E10)
-        #----------------------------------------------
-        # select data
-        coefficient_data <- coef_event[
-            stringr::str_detect(names(coef_event), gastype) == TRUE
-        ]
-
-        low_density_data <- data.table::rbindlist(
-            coefficient_data[
-                stringr::str_detect(names(coefficient_data), "_10") == FALSE
-            ]
-        )
-
-        high_density_data <- data.table::rbindlist(
-            coefficient_data[
-                stringr::str_detect(names(coefficient_data), "_10") == TRUE
-            ]
-        )
-
-        #----------------------------------------------
-        # generate base plot
-
-        baseplot <- ggplot()+
-            geom_vline(
-                xintercept = as.factor(-1),
-                linewidth = 0.6,
-                linetype = "solid",
-                col = "grey80"
-            )+
-            geom_hline(
-                yintercept = 0,
-                linewidth = 0.6,
-                linetype = "solid",
-                col = "grey80"
-            )+
-            scale_y_continuous(
-                breaks = round(seq(-0.3, 0.1, 0.1), digits = 2)
-            )+
-            labs(
-                y = "Point estimates and 95% CI",
-                x = "Time to treatment (days)"
-            )+
-            theme_classic()+
-            theme(
-                legend.position = "bottom",
-                panel.border = element_rect(linewidth = 1, fill = NA),
-                axis.text = element_text(size = 21),
-                axis.title = element_text(size = 23),
-                legend.key.size = unit(1.3, "cm"),
-                legend.title = element_text(size = 22),
-                legend.text = element_text(size = 22)
-            )
-
-        if (suffix_export == "twoweeks") {
-            rangeplot <- baseplot+
-                geom_pointrange(
-                    data = high_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 13, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "high", shape = "high"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
-                geom_pointrange(
-                    data = low_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 13, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "low", shape = "low"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
-                scale_x_discrete(
-                    breaks = seq(-60, 15, 15)
-                )+
-                # extend plotting space
-                coord_cartesian(xlim = c(0, 80))
-        } else {
-            rangeplot <- baseplot+
-                geom_pointrange(
-                    data = high_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 91, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "high", shape = "high"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
-                geom_pointrange(
-                    data = low_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 91, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "low", shape = "low"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
-                scale_x_discrete(
-                    breaks = seq(-60, 90, 30)
-                )+
-                # extend plotting space
-                coord_cartesian(xlim = c(0, 154))
-        }
-
-        #----------------------------------------------
-        # add colors to plot
-
-        colplot <- rangeplot+
-            scale_color_manual(
-                values = c(
-                    "low" = config_globals()[["java_five_colors"]][1],
-                    "high" = config_globals()[["java_five_colors"]][3]
-                ),
-                labels = c(
-                    "low" = "Low",
-                    "high" = "High"
-                ),
-                name = "Income \nlevel"
-            )+
-            scale_shape_manual(
-                values = c(
-                    "low" = 17,
-                    "high" = 15
-                ),
-                labels = c(
-                    "low" = "Low",
-                    "high" = "High"
-                ),
-                name = "Income \nlevel"
-            )
-
-        #----------------------------------------------
-        # add horizontal line for FTD
-        if (gastype == "diesel") {
-            coefplot <- colplot+
-                geom_hline(
-                    yintercept = -0.1671,
-                    linewidth = 0.6,
-                    linetype = "dashed"
-                )+
-                geom_text(
-                    mapping = aes(
-                        x = as.factor(-40),
-                        y = -0.1571,
-                        label = "Fuel tax discount"
-                    ),
-                    size = 7.5
-                )
-        } else {
-            coefplot <- colplot+
-                geom_hline(
-                    yintercept = -0.3516,
-                    linewidth = 0.6,
-                    linetype = "dashed"
-                )+
-                geom_text(
-                    mapping = aes(
-                        x = as.factor(-40),
-                        y = -0.3416,
-                        label = "Fuel tax discount"
-                    ),
-                    size = 7.5
-                )
-        }
-
-        # export
-        filename <- paste0(
-            "purch_power_",
-            gastype,
-            "_",
-            suffix_export,
-            "_high_low.png"
-        )
-        suppressMessages(ggsave(
-            plot = coefplot,
-            file.path(
-                config_paths()[["output_path"]],
-                "graphs",
-                filename
-            ),
-            dpi = config_globals()[["owndpi"]],
-            width = 10,
-            height = 10
-        ))
-    }
-
-    # loop through options and plot
-    for(gs in vars) {
-        plot_estimates(
-            gastype = gs
-        )
-    }
 
     #--------------------------------------------------
     # return
 
-    return(NULL)
+    return(est_results_munic_df)
 }
