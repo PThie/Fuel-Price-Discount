@@ -45,6 +45,7 @@ plotting_station_density_effects_event_study <- function(
         baseplot <- ggplot()+
             geom_vline(
                 xintercept = as.factor(-1),
+                # xintercept = -1,
                 linewidth = 0.6,
                 linetype = "solid",
                 col = "grey80"
@@ -104,27 +105,60 @@ plotting_station_density_effects_event_study <- function(
                 # extend plotting space
                 coord_cartesian(xlim = c(0, 80))
         } else {
-            rangeplot <- baseplot+
-                geom_pointrange(
-                    data = high_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 91, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "high", shape = "high"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
-                geom_pointrange(
-                    data = low_density_data,
-                    mapping = aes(
-                        x = factor(time, levels = seq(-61, 91, 1)),
-                        y = coefficient, ymin = lower, ymax = upper,
-                        col = "low", shape = "low"
-                    ),
-                    linewidth = 1,
-                    size = 0.5
-                )+
+            # NOTE: implement for the states analysis the possibility that
+            # not all station density categories are available
+            # if not available, the data just contains NA (nrow = 1)
+            if (nrow(high_density_data) > 1 & nrow(low_density_data) > 1) {
+                rangeplot <- baseplot+
+                    geom_pointrange(
+                        data = high_density_data,
+                        mapping = aes(
+                            x = factor(time, levels = seq(-61, 91, 1)),
+                            y = coefficient, ymin = lower, ymax = upper,
+                            col = "high", shape = "high"
+                        ),
+                        linewidth = 1,
+                        size = 0.5
+                    )+
+                    geom_pointrange(
+                        data = low_density_data,
+                        mapping = aes(
+                            x = factor(time, levels = seq(-61, 91, 1)),
+                            y = coefficient, ymin = lower, ymax = upper,
+                            col = "low", shape = "low"
+                        ),
+                        linewidth = 1,
+                        size = 0.5
+                    )
+            } else if (nrow(high_density_data) > 1 & nrow(low_density_data) == 1) {
+                rangeplot <- baseplot+
+                    geom_pointrange(
+                        data = high_density_data,
+                        mapping = aes(
+                            x = factor(time, levels = seq(-61, 91, 1)),
+                            y = coefficient, ymin = lower, ymax = upper,
+                            col = "high", shape = "high"
+                        ),
+                        linewidth = 1,
+                        size = 0.5
+                    )
+            } else if (nrow(high_density_data) == 1 & nrow(low_density_data) > 1) {
+                rangeplot <- baseplot+
+                    geom_pointrange(
+                        data = low_density_data,
+                        mapping = aes(
+                            x = factor(time, levels = seq(-61, 91, 1)),
+                            y = coefficient, ymin = lower, ymax = upper,
+                            col = "low", shape = "low"
+                        ),
+                        linewidth = 1,
+                        size = 0.5
+                    )
+            } else {
+                rangeplot <- baseplot
+            }
+            
+            rangeplot <- rangeplot+
                 scale_x_discrete(
                     breaks = seq(-60, 90, 30)
                 )+
