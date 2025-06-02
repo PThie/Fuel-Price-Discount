@@ -29,7 +29,7 @@ plotting_purch_power_effects <- function(
             linewidth = 1, size = 0.5
         )+
         scale_y_continuous(
-            breaks = seq(-0.14, -0.36, -0.02)
+            breaks = seq(-0.1, -0.4, -0.02)
         )+
         scale_shape_manual(
             values = c(
