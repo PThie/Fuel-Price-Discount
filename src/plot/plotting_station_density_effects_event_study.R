@@ -45,7 +45,6 @@ plotting_station_density_effects_event_study <- function(
         baseplot <- ggplot()+
             geom_vline(
                 xintercept = as.factor(-1),
-                # xintercept = -1,
                 linewidth = 0.6,
                 linetype = "solid",
                 col = "grey80"
