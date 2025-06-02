@@ -711,6 +711,23 @@ targets_analysis <- rlang::list2(
         )
     ),
     tar_target(
+        testing_states_purchasing_power,
+        estimating_states_purch_power(
+            price_data = state_prices,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned,
+            german_municipalities = german_municipalities
+        )
+    ),
+    tar_target(
+        testing_states_purchasing_power_event_study,
+        estimating_states_purch_power_event_study(
+            price_data = state_prices,
+            german_stations = german_stations,
+            microm_data_cleaned = microm_data_cleaned
+        )
+    ),
+    tar_target(
         testing_states_station_density,
         estimating_states_station_density(
             price_data = state_prices,
