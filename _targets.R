@@ -719,6 +719,12 @@ targets_analysis <- rlang::list2(
             german_municipalities = german_municipalities
         )
     ),
+    tar_fst(
+        average_state_effects_purch_power,
+        calculating_average_state_effect_purch_power(
+            state_effects = testing_states_purchasing_power
+        )
+    ),
     tar_target(
         testing_states_purchasing_power_event_study,
         estimating_states_purch_power_event_study(
