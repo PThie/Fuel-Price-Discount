@@ -864,7 +864,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         french_ftd_trends_plots,
         plotting_french_ftd(
-            fuel_prices = french_fuel_prices_prep
+            fuel_prices = fuel_prices
         )
     ),
     tar_target(
@@ -877,6 +877,18 @@ targets_analysis <- rlang::list2(
         french_ftd_event_study,
         estimating_french_ftd_event_study(
             price_data = french_fuel_prices_prep
+        )
+    ),
+    tar_target(
+        french_honest_did,
+        testing_robust_trends_french(
+            price_data = french_fuel_prices_prep
+        )
+    ),
+    tar_target(
+        french_honest_did_plots,
+        plotting_robust_trends_french(
+            honest_did_days = french_honest_did
         )
     )
 )
