@@ -119,7 +119,11 @@ plotting_french_ftd <- function(
 
     for (fuel in c("diesel", "e10")) {
         price_plot <- plotting_trends(
-            ds = avg_fuel_prices,
+            ds = avg_fuel_prices |>
+                dplyr::filter(
+                    date >= as.Date("2022-01-01", format = "%Y-%m-%d") &
+                    date <= as.Date("2022-12-31", format = "%Y-%m-%d")
+                ),
             gastype = fuel
         )
 
