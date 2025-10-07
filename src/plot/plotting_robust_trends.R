@@ -60,7 +60,7 @@ plotting_robust_trends <- function(
                 )+
                 labs(
                     x = "M",
-                    y = ""
+                    y = "95% CI"
                 )+
                 theme_classic()+
                 theme(

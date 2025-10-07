@@ -64,7 +64,7 @@ plotting_robust_trends_dayspecific_states <- function(
                 )+
                 labs(
                     x = "M",
-                    y = ""
+                    y = "95% CI"
                 )+
                 theme_classic()+
                 theme(
