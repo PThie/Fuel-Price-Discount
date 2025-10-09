@@ -1,5 +1,10 @@
 data
-output
+output/descriptives
+output/estimation
+output/writing
+output/archive
+output/graphs/archive
+output/graphs/honestdid*
 .Rprofile
 .Rhistory
 renv.lock
@@ -8,3 +13,4 @@ src/helpers/config.R
 _targets/meta/meta
 _targets/
 literature
+output/graphs/thumbs.db
