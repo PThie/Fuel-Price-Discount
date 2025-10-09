@@ -175,8 +175,8 @@ plotting_station_density_effects_event_study <- function(
                     "high" = config_globals()[["java_five_colors"]][3]
                 ),
                 labels = c(
-                    "low" = "Low",
-                    "high" = "High"
+                    "low" = "Weak Competition",
+                    "high" = "Strong Competition"
                 ),
                 name = "Station density\nlevel"
             )+
@@ -186,8 +186,8 @@ plotting_station_density_effects_event_study <- function(
                     "high" = 15
                 ),
                 labels = c(
-                    "low" = "Low",
-                    "high" = "High"
+                    "low" = "Weak Competition",
+                    "high" = "Strong Competition"
                 ),
                 name = "Station density\nlevel"
             )
