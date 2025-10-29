@@ -1,7 +1,6 @@
 estimating_regional_effect <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA,
-    german_districts = NA,
     suffix_export = NA
 ) {
     #' @title Regional effect on district-level
@@ -9,9 +8,8 @@ estimating_regional_effect <- function(
     #' @description This function estimates the fuel price discount
     #' on the district-level.
     #' 
-    #' @param fuel_prices_april_august Fuel price data April to August 2022
+    #' @param price_data Fuel price data April to August 2022
     #' @param german_stations German station information
-    #' @param german_districts German district information
     #' @param suffix_export Suffix for export files
     #' 
     #' @return Returns data frame with regional effects and maps
@@ -21,7 +19,7 @@ estimating_regional_effect <- function(
     # merge station data with district info to price data
 
     avg_prices_district <- merge(
-        fuel_prices_april_august,
+        price_data,
         german_stations |>
             sf::st_drop_geometry(),
         by = "station_id",
@@ -31,7 +29,7 @@ estimating_regional_effect <- function(
     # replace district ags for France with fictional number
     avg_prices_district <- avg_prices_district |>
         dplyr::mutate(
-            AGS_district = case_when(
+            AGS_district = dplyr::case_when(
                 country == "FR" ~ "99999",
                 TRUE ~ AGS_district
             )
@@ -53,7 +51,7 @@ estimating_regional_effect <- function(
         )
 
         # estimate
-        est_mod <- feols(
+        est_mod <- fixest::feols(
             fml = fm,
             data = moddata,
             cluster = "station_id",
@@ -105,10 +103,13 @@ estimating_regional_effect <- function(
 
         # extract coefficients
         coeffs <- as.data.frame(cbind(coefficient = est$coefficient))
+        ses <- as.data.frame(cbind(se = est$se))
 
         # redefine row names
         coeffs$variable <- row.names(coeffs)
         row.names(coeffs) <- seq(1, nrow(coeffs))
+        ses$variable <- row.names(ses)
+        row.names(ses) <- seq(1, nrow(ses))
 
         # make sure that only interaction is left
         coeffs <- coeffs |>
@@ -116,14 +117,22 @@ estimating_regional_effect <- function(
                 stringr::str_detect(variable, "treated:relevel") == TRUE
             )
 
-        # calculate confidence interval
-        con <- confint(est, level = 0.95)
+        ses <- ses |>
+            dplyr::filter(
+                stringr::str_detect(variable, "treated:relevel") == TRUE
+            )
+
+        coeffs_merged <- merge(
+            coeffs,
+            ses,
+            by = "variable"
+        )
 
         # add CI to data
-        coeffs <- coeffs |>
+        coeffs_merged <- coeffs_merged |>
             dplyr::mutate(
-                lower_ci = con[, 1],
-                upper_ci = con[, 2],
+                lower_ci = coefficient - 1.96 * se,
+                upper_ci = coefficient + 1.96 * se,
                 # add fuel type
                 mod = var,
                 # extract AGS
@@ -140,7 +149,7 @@ estimating_regional_effect <- function(
             # remove variable
             dplyr::select(-variable)
 
-        return(coeffs)
+        return(coeffs_merged)
     }
 
     diesel_results <- get_coefficients(var = "diesel")
@@ -177,9 +186,9 @@ estimating_regional_effect <- function(
     )
 
     # get ranges
-    range_regional_effets <- results |>
-        group_by(mod) |>
-        summarise(
+    range_regional_effects <- results |>
+        dplyr::group_by(mod) |>
+        dplyr::summarise(
             max_pass = max(passthrough),
             min_pass = min(passthrough)
         ) |>
@@ -187,7 +196,7 @@ estimating_regional_effect <- function(
 
     # export
     openxlsx::write.xlsx(
-        range_regional_effets,
+        range_regional_effects,
         file.path(
             config_paths()[["output_path"]],
             "estimation",
@@ -199,86 +208,6 @@ estimating_regional_effect <- function(
         ),
         rowNames = FALSE
     )
-
-    #----------------------------------------------
-    # map of effects
-
-    # merge district info
-    results_districts <- merge(
-        results,
-        german_districts,
-        by.x = "ags_district",
-        by.y = "AGS",
-        all.x = TRUE
-    )
-
-    # set geometry
-    results_districts <- sf::st_set_geometry(
-        results_districts,
-        results_districts$geometry
-    )
-
-    # loop through variables
-    for(var in vars) {
-        # define breaks
-        if (var == "diesel") {
-            br <- seq(50, 140, 10)
-            lim <- c(50, 140)
-
-            if (suffix_export == "twoweeks") {
-                br <- seq(100, 160, 10)
-                lim <- c(100, 160)
-            }
-        } else {
-            br <- seq(50, 110, 10)
-            lim <- c(50, 110)
-
-            if (suffix_export == "twoweeks") {
-                br <- seq(80, 130, 10)
-                lim <- c(80, 130)
-            }
-        }
-        # generate map
-        map <- ggplot()+
-            geom_sf(
-                data = results_districts |>
-                    filter(mod == var),
-                aes(geometry = geometry, fill = passthrough)
-            )+
-            scale_fill_viridis_c(
-                option = "magma",
-                direction = -1,
-                name = "Pass-through rate\n(in %)",
-                breaks = br,
-                limits = lim
-            )+
-            theme_void()+
-            theme(
-                legend.position = "bottom",
-                legend.title = element_text(size = 14, vjust = 0.8),
-                legend.key.size = unit(0.8, "cm"),
-                legend.text = element_text(size = 11, angle = 90, vjust = 0.5)
-            )
-
-        # export
-        filename <- paste0(
-            "regional_price_effect_",
-            var,
-            "_",
-            suffix_export,
-            ".png"
-        )
-
-        suppressMessages(ggsave(
-            plot = map,
-            file.path(
-                config_paths()[["output_path"]],
-                "maps",
-                filename
-            ),
-            dpi = config_globals()[["owndpi"]]
-        ))
-    }
 
     #--------------------------------------------------
     # return
