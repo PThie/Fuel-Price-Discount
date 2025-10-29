@@ -296,7 +296,7 @@ making_purch_power <- function(
                 paste(
                     depvar, "~",
                     paste("+ relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
-                    paste("| months + station_id")
+                    paste("| as.factor(date) + station_id")
                 )
             )
 
