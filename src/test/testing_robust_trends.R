@@ -1,12 +1,12 @@
 testing_robust_trends <- function(
-    fuel_prices_april_august = NA
+    price_data = NA
 ) {
     #' @title Testing robust trends with HonestDiD approach
     #' 
     #' @description This function tests for robust trends (parallel trends) by
     #' using the HonestDiD approach by Rambachan & Roth (2022).
     #' 
-    #' @param fuel_prices_april_august Fuel price data April to August 2022
+    #' @param price_data Fuel price data April to August 2022
     #' 
     #' @return List with honestDiD results
     #' @author Patrick Thiel
@@ -23,7 +23,7 @@ testing_robust_trends <- function(
     # prepare data
 
     # add time to treatment in days
-    avg_prices_prep <- fuel_prices_april_august |>
+    avg_prices_prep <- price_data |>
         dplyr::mutate(
             time_to_treatment = as.numeric(difftime(
                 as.Date(date, "%Y-%m-%d"),
@@ -54,7 +54,7 @@ testing_robust_trends <- function(
         est_mod <- fixest::feols(
             fml = fm,
             data = moddata,
-            cluster = regionFE
+            cluster = "station_id"
         )
         return(est_mod)
     }

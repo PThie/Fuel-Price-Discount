@@ -55,7 +55,7 @@ testing_robust_trends_dayspecific_states <- function(
         est_mod <- fixest::feols(
             fml = fm,
             data = moddata,
-            cluster = regionFE
+            cluster = "station_id"
         )
         return(est_mod)
     }

@@ -1,5 +1,5 @@
 testing_french_reaction <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     french_stations = NA
 ) {
     #' @title Testing French reaction
@@ -7,7 +7,7 @@ testing_french_reaction <- function(
     #' @desciption This function checks the price development at French stations
     #' depending on how far they are from the German border.
     #' 
-    #' @param fuel_prices_april_august Fuel price data for April to August 2022
+    #' @param price_data Fuel price data for April to August 2022
     #' @param french_stations French station information
     #' 
     #' @return Returns graphs
@@ -276,7 +276,7 @@ testing_french_reaction <- function(
     # merge station data to price data
 
     french_prices <- merge(
-        fuel_prices_april_august |>
+        price_data |>
             dplyr::filter(country == "FR"),
         french_stations |>
             sf::st_drop_geometry(),
@@ -350,7 +350,7 @@ testing_french_reaction <- function(
     for(fueltype in fueltypes) {
         # position of FTD label
         if(fueltype == "diesel") {
-            yanchor = 1.8
+            yanchor = 1.72
         } else {
             yanchor = 1.72
         }
@@ -406,6 +406,10 @@ testing_french_reaction <- function(
                 ),
                 name = ""
             )+
+            scale_y_continuous(
+                breaks = seq(1.7, 2.2, 0.1),
+                limits = c(1.68, 2.22)
+            )+
             scale_x_date(
                 date_breaks = "1 month",
                 date_minor_breaks = "1 week",
@@ -445,4 +449,9 @@ testing_french_reaction <- function(
             dpi = config_globals()[["owndpi"]]
         )
     }
+
+    #--------------------------------------------------
+    # return
+
+    return(NULL)
 }
