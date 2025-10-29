@@ -1,7 +1,8 @@
 estimating_baseline_event_study <- function(
     price_data = NA,
     suffix_export = NA,
-    temperature = FALSE
+    temperature = FALSE,
+    twoway_clustering = NA
 ) {
     #' @title Estimating an event study for the baseline
     #' 
@@ -11,6 +12,7 @@ estimating_baseline_event_study <- function(
     #' @param price_data Fuel price data April to August 2022
     #' @param suffix_export Suffix for export files
     #' @param temperature Logical, whether to include temperature as control
+    #' @param twoway_clustering Logical, whether to use two-way clustering
     #' 
     #' @return List with estimation results
     #' @author Patrick Thiel
@@ -46,12 +48,19 @@ estimating_baseline_event_study <- function(
             depvar = dep_case,
             fixef = "time_region",
             event = TRUE,
-            temperature = temperature
+            temperature = temperature,
+            twoway_clustering = twoway_clustering
         )
         mod_list_event[[dep_case]] <- mod
     })
 
     # loop through estimation results and generate plot
+    if (twoway_clustering == TRUE) {
+        cluster_names <- c("station_id", "date")
+    } else {
+        cluster_names <- c("station_id")
+    }
+
     for (result in names(mod_list_event)) {
         # subset for fuel type
         est_data <- mod_list_event[[result]]
@@ -70,7 +79,7 @@ estimating_baseline_event_study <- function(
                     ".tex"
                 )
             ),
-            digits = "r3", cluster = "station_id",
+            digits = "r3", cluster = cluster_names,
             dict = config_globals()[["coefnames"]],
             replace = TRUE,
             signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.10)
@@ -80,45 +89,33 @@ estimating_baseline_event_study <- function(
         coef <- as.data.frame(est_data$coefficients)
         coef$var <- row.names(coef)
         row.names(coef) <- seq(1, nrow(coef), 1)
+
+        # SE
+        ses <- as.data.frame(est_data$se)
+        ses$var <- row.names(ses)
+        row.names(ses) <- seq(1, nrow(ses), 1)
     
         coef_prep <- coef |>
+            merge(
+                ses,
+                by = "var"
+            ) |>
             dplyr::rename(
-                coefficient = `est_data$coefficients`
+                coefficient = `est_data$coefficients`,
+                se = `est_data$se`
             ) |>
             dplyr::mutate(
-                time = substr(var, start = 44, stop = 46)
-            )
-
-        # get confidence intervals
-        confidence <- confint(est_data, level = 0.95) |>
-            dplyr::rename(
-                lower = `2.5 %`,
-                upper = `97.5 %`
+                time = substr(var, start = 44, stop = 46),
+                time = as.numeric(time),
+                lower = coefficient - 1.96 * se,
+                upper = coefficient + 1.96 * se
             ) |>
-            as.data.frame()
-
-        confidence_prep <- confidence |>
-            dplyr::mutate(
-                var = row.names(confidence),
-                time = substr(var, start = 44, stop = 46)
-            )
-
-        row.names(confidence_prep) <- seq(1, nrow(confidence_prep), 1)
-
-        # combine both
-        final_prep <- merge(
-            coef_prep |>
-                dplyr::select(time, coefficient),
-            confidence_prep |>
-                dplyr::select(time, lower, upper),
-            by = "time"
-        )
-
-        final_prep$time <- as.numeric(final_prep$time)
+            dplyr::select(-c("var", "se")) |>
+            dplyr::relocate(time)
 
         # add reference point
         final_prep <- rbind(
-            final_prep,
+            coef_prep,
             as.data.frame(
                 cbind(time = -1, coefficient = 0, lower = 0, upper = 0)
             )
@@ -191,7 +188,8 @@ estimating_baseline_event_study <- function(
                 breaks = seq(-60, 90, 30)
             )+
             scale_y_continuous(
-                breaks = round(seq(-0.3, 0.1, 0.1), digits = 2)
+                breaks = round(seq(-0.4, 0.1, 0.1), digits = 2),
+                limits = c(-0.41, 0.15)
             )+
             labs(
                 y = "Point estimates and 95% CI",

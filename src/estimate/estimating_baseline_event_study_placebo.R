@@ -35,7 +35,8 @@ estimating_baseline_event_study_placebo <- function(
                 depvar = dep_case,
                 fixef = "time_region",
                 event = TRUE,
-                temperature = FALSE
+                temperature = FALSE,
+                twoway_clustering = FALSE
             )
             mod_list_event[[dep_case]] <- mod
         })

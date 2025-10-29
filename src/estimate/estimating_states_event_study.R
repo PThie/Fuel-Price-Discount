@@ -29,7 +29,8 @@ estimating_states_event_study <- function(
 
         estimating_baseline_event_study(
             price_data = state_price_data,
-            suffix_export = suffix_state
+            suffix_export = suffix_state,
+            twoway_clustering = FALSE
         )
     }
 
