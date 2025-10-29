@@ -36,7 +36,7 @@ estimating_states_station_density <- function(
         ]
 
         result <- making_station_density(
-            fuel_prices_april_august = state_price_data,
+            price_data = state_price_data,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,

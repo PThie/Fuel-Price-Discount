@@ -1,5 +1,5 @@
 estimating_purch_power_event_study <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA,
     microm_data_cleaned = NA,
     suffix_export = NA
@@ -9,7 +9,7 @@ estimating_purch_power_event_study <- function(
     #' @description This function estimates the event study effects of the
     #' purchasing power categories.
     #' 
-    #' @param fuel_prices_april_august Fuel price data April to August 2022.
+    #' @param price_data Fuel price data April to August 2022.
     #' @param german_stations German stations data.
     #' @param microm_data_cleaned Microm data cleaned.
     #' @param suffix_export Suffix for export files.
@@ -130,7 +130,7 @@ estimating_purch_power_event_study <- function(
     # merge to station prices
 
     avg_prices_pp <- merge(
-        fuel_prices_april_august,
+        price_data,
         german_stations_munic,
         by = "station_id",
         all.x = TRUE
@@ -249,46 +249,36 @@ estimating_purch_power_event_study <- function(
             coef <- as.data.frame(est_data$coefficients)
             coef$var <- row.names(coef)
             row.names(coef) <- seq(1, nrow(coef), 1)
-    
+
+            # SE
+            ses <- as.data.frame(est_data$se)
+            ses$var <- row.names(ses)
+            row.names(ses) <- seq(1, nrow(ses), 1)
+
             coef_prep <- coef |>
+                merge(
+                    ses,
+                    by = "var"
+                ) |>
                 dplyr::rename(
-                    coefficient = `est_data$coefficients`
+                    coefficient = `est_data$coefficients`,
+                    se = `est_data$se`
                 ) |>
                 dplyr::mutate(
-                    time = substr(var, start = 44, stop = 46)
-                )
-
-            # get confidence intervals
-            confidence <- confint(est_data, level = 0.95) |>
-                dplyr::rename(
-                    lower = `2.5 %`,
-                    upper = `97.5 %`
+                    time = substr(var, start = 44, stop = 46),
+                    time = as.numeric(time),
+                    lower = coefficient - 1.96 * se,
+                    upper = coefficient + 1.96 * se
                 ) |>
-                as.data.frame()
-
-            confidence_prep <- confidence |>
-                dplyr::mutate(
-                    var = row.names(confidence),
-                    time = substr(var, start = 44, stop = 46)
-                )
-            
-            row.names(confidence_prep) <- seq(1, nrow(confidence_prep), 1)
-
-            # combine both
-            final_prep <- merge(
-                coef_prep |>
-                    dplyr::select(time, coefficient),
-                confidence_prep |>
-                    dplyr::select(time, lower, upper),
-                by = "time"
-            )
-
-            final_prep$time <- as.numeric(final_prep$time)
+                dplyr::select(-c("var", "se")) |>
+                dplyr::relocate(time)
 
             # add reference point
             final_prep <- rbind(
-                final_prep,
-                as.data.frame(cbind(time = -1, coefficient = 0, lower = 0, upper = 0))
+                coef_prep,
+                as.data.frame(
+                    cbind(time = -1, coefficient = 0, lower = 0, upper = 0)
+                )
             )
 
             # add months

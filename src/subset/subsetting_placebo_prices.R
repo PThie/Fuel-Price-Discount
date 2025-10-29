@@ -22,17 +22,24 @@ subsetting_placebo_prices <- function(
         #--------------------------------------------------
         # restrict to April to August 2022
 
-        price_data_prep <- price_data |>
+        price_data_subset <- price_data |>
             dplyr::filter(date >= start_date) |>
             dplyr::filter(date <= end_date)
 
         #--------------------------------------------------
         # add month variable
 
-        price_data_prep <- price_data_prep |>
+        price_data_subset <- price_data_subset |>
             dplyr::mutate(
                 months = format(date, "%Y-%m")
             )
+
+        #--------------------------------------------------
+        # imput days for France
+
+        price_data_prep <- imputing_data(
+            price_data = price_data_subset
+        )
 
         #--------------------------------------------------
         # define treatment time

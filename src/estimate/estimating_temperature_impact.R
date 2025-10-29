@@ -1,5 +1,5 @@
 estimating_temperature_impact <- function(
-    fuel_prices = NA,
+    price_data = NA,
     station_temperature_data = NA
 ) {
     #' @title Estimating the impact of temperature on fuel prices
@@ -16,7 +16,7 @@ estimating_temperature_impact <- function(
     # combine fuel prices and temperature data
 
     fuel_prices_temp <- merge(
-        fuel_prices,
+        price_data,
         station_temperature_data,
         by = c("station_id", "date"),
         all.x = TRUE
@@ -28,7 +28,8 @@ estimating_temperature_impact <- function(
     results <- estimating_baseline_event_study(
         price_data = fuel_prices_temp,
         suffix_export = "temperature",
-        temperature = TRUE
+        temperature = TRUE,
+        twoway_clustering = FALSE
     )
 
     #--------------------------------------------------

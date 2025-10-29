@@ -33,7 +33,7 @@ estimating_states_purch_power_event_study <- function(
         ]
 
         result <- estimating_purch_power_event_study(
-            fuel_prices_april_august = state_price_data,
+            price_data = state_price_data,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             suffix_export = suffix_state
