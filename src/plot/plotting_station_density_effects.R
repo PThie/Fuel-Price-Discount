@@ -42,7 +42,8 @@ plotting_station_density_effects <- function(
         )
     )+
     scale_y_continuous(
-        breaks = seq(-0.14, -0.36, -0.02)
+        breaks = seq(-0.12, -0.38, -0.02),
+        limits = c(-0.38, -0.12)
     )+
     geom_hline(
         yintercept = -0.17,

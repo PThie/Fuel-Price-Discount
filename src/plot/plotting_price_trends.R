@@ -295,11 +295,13 @@ plotting_price_trends <- function(fuel_prices = NA) {
                 date_labels = "%b"
             )+
             scale_y_continuous(
-                breaks = seq(
-                    round(min(ds[[gastype]], na.rm = TRUE), digits = 1),
-                    round(max(ds[[gastype]], na.rm = TRUE), digits = 1)+0.1,
-                    0.1
-                )
+                # breaks = seq(
+                #     round(min(ds[[gastype]], na.rm = TRUE), digits = 1),
+                #     round(max(ds[[gastype]], na.rm = TRUE), digits = 1)+0.1,
+                #     0.1
+                # ),
+                breaks = seq(1.4, 2.3, 0.1),
+                limits = c(1.4, 2.4)
             )+
             geom_text(
                 x = as.Date("2022-07-15", format = "%Y-%m-%d"),

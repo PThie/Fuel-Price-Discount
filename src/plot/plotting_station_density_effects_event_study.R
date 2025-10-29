@@ -56,7 +56,8 @@ plotting_station_density_effects_event_study <- function(
                 col = "grey80"
             )+
             scale_y_continuous(
-                breaks = round(seq(-0.3, 0.1, 0.1), digits = 2)
+                breaks = round(seq(-0.4, 0.1, 0.1), digits = 2),
+                limits = c(-0.4, 0.12)
             )+
             labs(
                 y = "Point estimates and 95% CI",

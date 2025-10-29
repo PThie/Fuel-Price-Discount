@@ -105,6 +105,10 @@ plotting_european_prices <- function(european_fuel_prices = NA) {
                     "Poland" = "Poland"
                 )
             )+
+            scale_y_continuous(
+                breaks = seq(1.4, 2.3, 0.1),
+                limits = c(1.38, 2.42)
+            )+
             # add discount label
             geom_text(
                 data = subset_prices,

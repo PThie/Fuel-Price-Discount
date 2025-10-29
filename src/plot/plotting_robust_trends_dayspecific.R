@@ -41,10 +41,14 @@ plotting_robust_trends_dayspecific <- function(
                         ymax = ub
                     ),
                     width = 0.2,
-                    size = 1.3
+                    linewidth = 1.3
                 )+
                 geom_hline(
                     yintercept = 0
+                )+
+                scale_y_continuous(
+                    limits = c(-0.4, 0.05),
+                    breaks = seq(-0.4, 0, 0.1)
                 )+
                 labs(
                     x = "M",

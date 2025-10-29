@@ -48,7 +48,7 @@ plotting_robust_trends <- function(
                     ),
                     width = 0.15,
                     position = "dodge",
-                    size = 1
+                    linewidth = 1
                 )+
                 geom_hline(
                     yintercept = 0
@@ -57,6 +57,10 @@ plotting_robust_trends <- function(
                     name = "Days Post-FTD",
                     labels = period_label,
                     values = pal
+                )+
+                scale_y_continuous(
+                    limits = c(-0.65, 0.35),
+                    breaks = round(seq(-0.6, 0.3, 0.1), 1)
                 )+
                 labs(
                     x = "M",

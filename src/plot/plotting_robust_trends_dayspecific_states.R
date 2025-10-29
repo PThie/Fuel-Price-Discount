@@ -48,7 +48,7 @@ plotting_robust_trends_dayspecific_states <- function(
                         ymax = ub
                     ),
                     width = 0.2,
-                    size = 1.3,
+                    linewidth = 1.3,
                     position = position_dodge()
                 )+
                 geom_hline(
