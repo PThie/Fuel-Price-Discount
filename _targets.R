@@ -3,6 +3,8 @@
 # Run before loading the packages
     # Sys.setenv("PROJ_NETWORK"="ON")
 
+# TODO: CHECK FOR UNUSED FUNCTIONS
+
 #----------------------------------------------
 # load libraries
 
@@ -169,7 +171,36 @@ targets_geo <- rlang::list2(
             "regions",
             "regions.shp"
         ),
-        reading_french_regions(!!.x)
+        reading_french_regions(
+            !!.x,
+            region_name_id = "region"
+        )
+    ),
+    tar_file_read(
+        french_departments,
+        file.path(
+            config_paths()[["data_path"]],
+            "french_borders",
+            "contours-des-departements-francais-issus-dopenstreetmap",
+            "contours-des-departements-francais-issus-dopenstreetmap.shp"
+        ),
+        reading_french_regions(
+            !!.x,
+            region_name_id = "department"
+        )
+    ),
+    tar_file_read(
+        french_communes,
+        file.path(
+            config_paths()[["data_path"]],
+            "french_borders",
+            "communes-20220101-shp",
+            "communes-20220101.shp"
+        ),
+        reading_french_regions(
+            !!.x,
+            region_name_id = "commune"
+        )
     )
 )
 
@@ -229,6 +260,13 @@ targets_preparation <- rlang::list2(
         french_fuel_prices_prep,
         subsetting_french_fuel_prices(
             price_data = fuel_prices
+        )
+    ),
+    # Imputed data
+    tar_fst(
+        fuel_prices_imputed,
+        imputing_data(
+            price_data = fuel_prices_april_august
         )
     ),
     #--------------------------------------------------
@@ -309,9 +347,9 @@ targets_preparation <- rlang::list2(
 )
 
 #--------------------------------------------------
-# analysis
+# base analysis
 
-targets_analysis <- rlang::list2(
+targets_analysis_base <- rlang::list2(
     #--------------------------------------------------
     # Price trends
     tar_target(
@@ -325,7 +363,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         baseline_effects,
         estimating_baseline_effects(
-            price_data = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             suffix_export = "complete",
             twoway_clustering = FALSE
         )
@@ -335,36 +373,31 @@ targets_analysis <- rlang::list2(
     tar_target(
         baseline_event_study,
         estimating_baseline_event_study(
-            price_data = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
+            suffix_export = "complete",
+            twoway_clustering = FALSE
+        )
+    ),
+    tar_fst(
+        passthrough_event_study,
+        calculating_average_event_study_effect(
+            dependency = baseline_event_study,
             suffix_export = "complete"
         )
-    ),
-    #--------------------------------------------------
-    # Testing for spillovers at the French border
-    tar_target(
-        french_reaction_spillovers,
-        testing_french_reaction(
-            fuel_prices_april_august = fuel_prices_april_august,
-            french_stations = french_stations
-        )
-    ),
-    #--------------------------------------------------
-    # Plotting European gas prices
-    # Tests whether France is different in their price development compared
-    # to other European countries
-    tar_target(
-        european_prices_plots,
-        plotting_european_prices(
-            european_fuel_prices = european_fuel_prices
-        )
-    ),
+    )
+)
+
+#--------------------------------------------------
+# purchasing power (income) analysis
+
+targets_analysis_income <- rlang::list2(
     #--------------------------------------------------
     # Testing the role of purchasing power
     # As proxy for demand elasticity
     tar_target(
         purchasing_power_effects,
         making_purch_power(
-            price_data = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,
@@ -381,7 +414,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         purchasing_power_effects_event_study,
         estimating_purch_power_event_study(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             suffix_export = "complete"
@@ -397,7 +430,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         purchasing_power_effects_twoweeks,
         making_purch_power(
-            price_data = fuel_prices_april_august |>
+            price_data = fuel_prices_imputed |>
                 dplyr::filter(date <= "2022-06-14"),
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
@@ -415,7 +448,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         purchasing_power_effects_event_study_twoweeks,
         estimating_purch_power_event_study(
-            fuel_prices_april_august = fuel_prices_april_august |>
+            price_data = fuel_prices_imputed |>
                 dplyr::filter(date <= "2022-06-14"),
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
@@ -428,14 +461,20 @@ targets_analysis <- rlang::list2(
             effects = purchasing_power_effects_event_study_twoweeks,
             suffix_export = "twoweeks"
         )
-    ),
+    )
+)
+
+#--------------------------------------------------
+# competition analysis
+
+targets_analysis_competition <- rlang::list2(
     #--------------------------------------------------
     # Testing the role of competition
     # Proxied through the station density per car
     tar_target(
         station_density_effects,
         making_station_density(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             german_municipalities = german_municipalities,
@@ -453,7 +492,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         station_density_effects_event_study,
         estimating_station_density_event_study(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
             suffix_export = "complete"
@@ -469,7 +508,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         station_density_effects_twoweeks,
         making_station_density(
-            fuel_prices_april_august = fuel_prices_april_august |>
+            price_data = fuel_prices_imputed |>
                 dplyr::filter(date <= "2022-06-14"),
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
@@ -488,7 +527,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         station_density_effects_event_study_twoweeks,
         estimating_station_density_event_study(
-            fuel_prices_april_august = fuel_prices_april_august |>
+            price_data = fuel_prices_imputed |>
                 dplyr::filter(date <= "2022-06-14"),
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned,
@@ -501,14 +540,27 @@ targets_analysis <- rlang::list2(
             effects = station_density_effects_event_study_twoweeks,
             suffix_export = "twoweeks"
         )
-    ),
+    )
+)
+
+#--------------------------------------------------
+# analysis for regional effects
+
+targets_analysis_regional <- rlang::list2(
     #--------------------------------------------------
     # Estimating the regional effect at district level
     tar_target(
         regional_effect_district,
         estimating_regional_effect(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
+            suffix_export = "complete"
+        )
+    ),
+    tar_target(
+        regional_effect_district_plots,
+        plotting_regional_effects(
+            regional_effects = regional_effect_district,
             german_districts = german_districts,
             suffix_export = "complete"
         )
@@ -516,11 +568,43 @@ targets_analysis <- rlang::list2(
     tar_target(
         regional_effect_district_twoweeks,
         estimating_regional_effect(
-            fuel_prices_april_august = fuel_prices_april_august |>
+            price_data = fuel_prices_imputed |>
                 dplyr::filter(date <= "2022-06-14"),
             german_stations = german_stations,
+            suffix_export = "twoweeks"
+        )
+    ),
+    tar_target(
+        regional_effect_district_plots_twoweeks,
+        plotting_regional_effects(
+            regional_effects = regional_effect_district_twoweeks,
             german_districts = german_districts,
             suffix_export = "twoweeks"
+        )
+    )
+)
+
+#--------------------------------------------------
+# additional analysis
+
+targets_analysis_additional <- rlang::list2(
+    #--------------------------------------------------
+    # Testing for spillovers at the French border
+    tar_target(
+        french_reaction_spillovers,
+        testing_french_reaction(
+            price_data = fuel_prices_imputed,
+            french_stations = french_stations
+        )
+    ),
+    #--------------------------------------------------
+    # Plotting European gas prices
+    # Tests whether France is different in their price development compared
+    # to other European countries
+    tar_target(
+        european_prices_plots,
+        plotting_european_prices(
+            european_fuel_prices = european_fuel_prices
         )
     ),
     #--------------------------------------------------
@@ -574,7 +658,7 @@ targets_analysis <- rlang::list2(
     tar_target(
         purchasing_power_median,
         making_purch_power_median(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned
         )
@@ -622,48 +706,96 @@ targets_analysis <- rlang::list2(
             time_effects_petrol = time_effects_petrol,
             google_trends_data = google_trends_data
         )
-    ),
+    )
+)
+
+#--------------------------------------------------
+# analysis honest did
+
+targets_analysis_honestdid <- rlang::list2(
     #--------------------------------------------------
     # Testing the parallel trend assumption using the HonestDiD approach
-    tar_fst(
-        weekly_prices,
-        making_weekly_prices(
-            price_data = fuel_prices_april_august
-        )
-    ),
     tar_target(
         honest_did,
         testing_robust_trends(
-            fuel_prices_april_august = fuel_prices_april_august
+            price_data = fuel_prices_imputed
         )
     ),
     tar_target(
         honest_did_days,
         testing_robust_trends_dayspecific(
-            fuel_prices_april_august = fuel_prices_april_august
+            price_data = fuel_prices_imputed
         )
     ),
     tar_target(
         honest_did_plots,
-        plotting_robust_trends(honest_did = honest_did)
+        plotting_robust_trends(
+            honest_did = honest_did
+        )
     ),
     tar_target(
         honest_did_days_plots,
         plotting_robust_trends_dayspecific(
             honest_did_days = honest_did_days
         )
+    )
+)
+
+#--------------------------------------------------
+# placebo analysis
+
+targets_analysis_placebo <- rlang::list2(
+    #--------------------------------------------------
+    # Placebo analysis
+    tar_target(
+        placebo_prices,
+        subsetting_placebo_prices(
+            price_data = fuel_prices
+        )
     ),
+    tar_target(
+        baseline_effects_placebo,
+        estimating_baseline_effects_placebo(
+            price_data = placebo_prices
+        )
+    ),
+    tar_target(
+        baseline_event_study_placebo,
+        estimating_baseline_event_study_placebo(
+            price_data = placebo_prices
+        )
+    ),
+    tar_target(
+        event_study_placebo_plots,
+        plotting_event_study_placebo(
+            result_list = baseline_event_study_placebo,
+            suffix_export = "placebo"
+        )
+    ),
+    tar_target(
+        event_study_placebo_combined_plots,
+        plotting_event_study_combined(
+            result_list = baseline_event_study,
+            result_list_placebo = baseline_event_study_placebo
+        )
+    )
+)
+
+#--------------------------------------------------
+# analysis other tests
+
+targets_analysis_testing <- rlang::list2(
     #--------------------------------------------------
     # Testing the effect in subset of states
     # This tests the effect in the "northern" states which
-    #' are all states that do not share a border with France plus Bayern. This
-    #' test intends to show robustness against violations of the SUTVA assumption
-    #' by excluding states at the border and Bayern. It also tests for impacts
-    #' of the drought during that period.
+    # are all states that do not share a border with France plus Bayern. This
+    # test intends to show robustness against violations of the SUTVA assumption
+    # by excluding states at the border and Bayern. It also tests for impacts
+    # of the drought during that period.
     tar_fst(
         north_states_prices,
         making_north_states(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations
         )
     ),
@@ -679,15 +811,102 @@ targets_analysis <- rlang::list2(
         testing_north_states_event_study,
         estimating_baseline_event_study(
             price_data = north_states_prices,
-            suffix_export = "north"
+            suffix_export = "north",
+            twoway_clustering = FALSE
         )
     ),
+    #--------------------------------------------------
+    # Baseline estimation with twoway clustering
+    tar_fst(
+        french_stations_regional,
+        combining_french_regional_data(
+            french_stations = french_stations,
+            french_regions = french_regions,
+            french_departments = french_departments,
+            french_communes = french_communes
+        )
+    ),
+    tar_fst(
+        fuel_prices_regional,
+        making_cluster_data(
+            price_data = fuel_prices_imputed,
+            german_stations = german_stations,
+            french_stations_regional = french_stations_regional
+        )
+    ),
+    tar_target(
+        cluster_test,
+        testing_clustering(
+            price_data = fuel_prices_regional
+        )
+    ),
+    #--------------------------------------------------
+    # Testing temperature impact
+    tar_target(
+        temperature_data,
+        reading_temperature_data()
+    ),
+    tar_fst(
+        station_temperature_data,
+        connecting_temperature_stations(
+            german_stations = german_stations,
+            french_stations = french_stations,
+            french_regions = french_regions,
+            temperature_data = temperature_data
+        )
+    ),
+    tar_target(
+        testing_temperature_impact,
+        estimating_temperature_impact(
+            price_data = fuel_prices_imputed,
+            station_temperature_data = station_temperature_data
+        )
+    ),
+    #--------------------------------------------------
+    # Testing the French FTD
+    # TODO: POTENTIALLY REDO BLOCK
+    # tar_target(
+    #     french_ftd_trends_plots,
+    #     plotting_french_ftd(
+    #         fuel_prices = fuel_prices
+    #     )
+    # ),
+    # tar_target(
+    #     french_ftd_baseline,
+    #     estimating_french_ftd(
+    #         price_data = french_fuel_prices_prep
+    #     )
+    # ),
+    # tar_target(
+    #     french_ftd_event_study,
+    #     estimating_french_ftd_event_study(
+    #         price_data = french_fuel_prices_prep
+    #     )
+    # ),
+    # tar_target(
+    #     french_honest_did,
+    #     testing_robust_trends_french(
+    #         price_data = french_fuel_prices_prep
+    #     )
+    # ),
+    # tar_target(
+    #     french_honest_did_plots,
+    #     plotting_robust_trends_french(
+    #         honest_did_days = french_honest_did
+    #     )
+    # )
+)
+
+#--------------------------------------------------
+# analysis for states individually
+
+targets_analysis_states <- rlang::list2(
     #--------------------------------------------------
     # Testing the effect for each state separately
     tar_fst(
         state_prices,
         making_state_prices(
-            fuel_prices_april_august = fuel_prices_april_august,
+            price_data = fuel_prices_imputed,
             german_stations = german_stations
         )
     ),
@@ -750,146 +969,6 @@ targets_analysis <- rlang::list2(
             german_stations = german_stations,
             microm_data_cleaned = microm_data_cleaned
         )
-    ),
-    #--------------------------------------------------
-    # Placebo analysis
-    tar_target(
-        placebo_prices,
-        subsetting_placebo_prices(
-            price_data = fuel_prices
-        )
-    ),
-    tar_target(
-        baseline_effects_placebo,
-        estimating_baseline_effects_placebo(
-            price_data = placebo_prices
-        )
-    ),
-    tar_target(
-        baseline_event_study_placebo,
-        estimating_baseline_event_study_placebo(
-            price_data = placebo_prices
-        )
-    ),
-    tar_target(
-        event_study_placebo_plots,
-        plotting_event_study_placebo(
-            result_list = baseline_event_study_placebo,
-            suffix_export = "placebo"
-        )
-    ),
-    tar_target(
-        event_study_placebo_combined_plots,
-        plotting_event_study_combined(
-            result_list = baseline_event_study,
-            result_list_placebo = baseline_event_study_placebo
-        )
-    ),
-    #--------------------------------------------------
-    # Baseline estimation with twoway clustering
-    tar_target(
-        testing_baseline_twoway_clustering,
-        estimating_baseline_effects(
-            price_data = fuel_prices_april_august,
-            suffix_export = "twoway",
-            twoway_clustering = TRUE
-        )
-    ),
-    #--------------------------------------------------
-    # Testing morning rush hour effects
-    # Reading raw German data (each individual change, not aggregated information)
-    tar_file(
-        german_fuel_price_file_raw,
-        file.path(
-            config_paths()[["data_path"]],
-            "german_fuel_data",
-            "fuel_prices_germany_raw.fst"
-        )
-    ),
-    tar_file_read(
-        german_fuel_prices_raw,
-        german_fuel_price_file_raw,
-        reading_german_fuel_prices(!!.x)
-    ),
-    tar_fst(
-        german_fuel_prices_april_august_raw,
-        subsetting_fuel_prices(
-            fuel_prices = german_fuel_prices_raw
-        )
-    ),
-    tar_fst(
-        german_fuel_prices_morning,
-        subsetting_morning_rush(
-            fuel_prices = german_fuel_prices_april_august_raw
-        )
-    ),
-    tar_fst(
-        fuel_prices_morning,
-        joining_germany_france(
-            german_fuel_prices = german_fuel_prices_morning,
-            french_fuel_prices = french_fuel_prices
-        )
-    ),
-    tar_target(
-        testing_morning_rush_event_study,
-        estimating_baseline_event_study(
-            price_data = fuel_prices_morning,
-            suffix_export = "morning_rush"
-        )
-    ),
-    #--------------------------------------------------
-    # Testing temperature impact
-    tar_target(
-        temperature_data,
-        reading_temperature_data()
-    ),
-    tar_fst(
-        station_temperature_data,
-        connecting_temperature_stations(
-            german_stations = german_stations,
-            french_stations = french_stations,
-            french_regions = french_regions,
-            temperature_data = temperature_data
-        )
-    ),
-    tar_target(
-        testing_temperature_impact,
-        estimating_temperature_impact(
-            fuel_prices = fuel_prices_april_august,
-            station_temperature_data = station_temperature_data
-        )
-    ),
-    #--------------------------------------------------
-    # Testing the French FTD
-    tar_target(
-        french_ftd_trends_plots,
-        plotting_french_ftd(
-            fuel_prices = fuel_prices
-        )
-    ),
-    tar_target(
-        french_ftd_baseline,
-        estimating_french_ftd(
-            price_data = french_fuel_prices_prep
-        )
-    ),
-    tar_target(
-        french_ftd_event_study,
-        estimating_french_ftd_event_study(
-            price_data = french_fuel_prices_prep
-        )
-    ),
-    tar_target(
-        french_honest_did,
-        testing_robust_trends_french(
-            price_data = french_fuel_prices_prep
-        )
-    ),
-    tar_target(
-        french_honest_did_plots,
-        plotting_robust_trends_french(
-            honest_did_days = french_honest_did
-        )
     )
 )
 
@@ -899,5 +978,13 @@ targets_analysis <- rlang::list2(
 rlang::list2(
     targets_geo,
     targets_preparation,
-    targets_analysis
+    targets_analysis_base,
+    targets_analysis_income,
+    targets_analysis_competition,
+    targets_analysis_regional,
+    targets_analysis_additional,
+    targets_analysis_honestdid,
+    targets_analysis_placebo,
+    targets_analysis_testing,
+    targets_analysis_states
 )
