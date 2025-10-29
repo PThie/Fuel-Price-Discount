@@ -1,12 +1,12 @@
 making_north_states <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA
 ) {
     #' @title Subsetting states
     #' 
     #' @description This function subsets the northern states.
     #' 
-    #' @param fuel_prices_april_august Fuel price data for April to August 2022
+    #' @param price_data Fuel price data for April to August 2022
     #' @param german_stations Station data for Germany
     #' 
     #' @return Price data for northern states
@@ -24,7 +24,7 @@ making_north_states <- function(
     #--------------------------------------------------
     # combine with price data
 
-    prices_prep <- fuel_prices_april_august |>
+    prices_prep <- price_data |>
         merge(
             german_stations,
             by = "station_id",

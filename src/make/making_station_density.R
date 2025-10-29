@@ -1,5 +1,5 @@
 making_station_density <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA,
     microm_data_cleaned = NA,
     german_municipalities = NA,
@@ -11,7 +11,7 @@ making_station_density <- function(
     #' @desciption This function determines the regional car density and then
     #' estimates the price effect of the German tax discount.
     #' 
-    #' @param fuel_prices_april_august Fuel prices from April to August 2022
+    #' @param price_data Fuel prices from April to August 2022
     #' @param german_stations German stations
     #' @param microm_data_cleaned Cleaned microm data (RWI-GEO-GRID data)
     #' @param german_municipalities German municipalities
@@ -176,7 +176,7 @@ making_station_density <- function(
 
     # merge to price data
     avg_prices_cd <- merge(
-        fuel_prices_april_august,
+        price_data,
         german_stations_cd,
         by = "station_id",
         all.x = TRUE

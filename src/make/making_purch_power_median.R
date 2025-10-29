@@ -1,5 +1,5 @@
 making_purch_power_median <- function(
-    fuel_prices_april_august = NA,
+    price_data = NA,
     german_stations = NA,
     microm_data_cleaned = NA
 ) {
@@ -8,7 +8,7 @@ making_purch_power_median <- function(
     #' @desciption This function analysis the passthrough given different
     #' purchasing power groups (i.e. income groups).
     #' 
-    #' @param fuel_prices_april_august Price data for Germany and France for
+    #' @param price_data Price data for Germany and France for
     #' April to August 2022
     #' @param german_stations German station information
     #' @param microm_data_cleaned Microm data cleaned (RWI-GEO-GRID)
@@ -56,7 +56,7 @@ making_purch_power_median <- function(
     # merge to station prices
 
     avg_prices_pp <- merge(
-        fuel_prices_april_august,
+        price_data,
         german_stations_munic,
         by = "station_id",
         all.x = TRUE
@@ -89,7 +89,7 @@ making_purch_power_median <- function(
             paste(
                 depvar, "~",
                 paste("+ relevel(as.factor(treat_tankrabatt_de), \"control\") * relevel(as.factor(treat_region_de), \"control\")"),
-                paste("| months + station_id")
+                paste("| as.factor(date) + station_id")
             )
         )
 
