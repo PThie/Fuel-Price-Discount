@@ -6,6 +6,8 @@ Authors: Prof. Dr. Manuel Frondel, Dr. Patrick Thiel and Prof. Dr. Colin Vance
 
 Code author: Dr. Patrick Thiel
 
+DOI: [https://doi.org/10.1016/j.regsciurbeco.2025.104183](https://doi.org/10.1016/j.regsciurbeco.2025.104183)
+
 ## Abstract
 
 Exploiting exogenous variation in retail fuel prices from a temporary fuel tax discount in Germany, we explore the distributional consequences emerging from
@@ -17,9 +19,10 @@ JEL Classifications: L13, L81, D43
 
 ## Current Publication and Citation
 
-Note: The paper has been accepted for publication in Regional Science and Urban Economics.
+Note: The paper has been published in in Regional Science and Urban Economics.
 
-Frondel, Manuel and Thiel, Patrick and Vance, Colin, Heterogeneous Pass-through over Space and Time: The Case of Germany’s Fuel Tax Discount. Ruhr Economic Papers, 1087. http://dx.doi.org/10.4419/96973262.
+Frondel, Manuel and Thiel, Patrick and Vance, Colin. (2026) The distributional consequences of tax pass-through: The case of Germany's fuel tax discount. Regional Science and Urban Economics, Vol 117, 104183. [https://doi.org/10.1016/j.regsciurbeco.2025.104183](https://doi.org/10.1016/j.regsciurbeco.2025.104183).
 
 ## Download latest version here:
+
 [Latest version (PDF)](https://github.com/PThie/Fuel-Price-Discount/blob/main/FTD_latest.pdf)
